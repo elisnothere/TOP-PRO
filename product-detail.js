@@ -1,7 +1,7 @@
 const detailData = window.TOP_PRO_DATA || {};
 const detailProducts = detailData.products || [];
 const detailWhatsappNumber = detailData.whatsappNumber || '595986732551';
-const detailAssetVersion = '20260618p';
+const detailAssetVersion = '20260824a';
 const detailLogoAsset = './assets/logo.png';
 const detailRoot = document.getElementById('product-page-root');
 const detailSlug = document.body.dataset.productSlug || '';
@@ -9,6 +9,21 @@ const detailSlug = document.body.dataset.productSlug || '';
 const detailProduct = detailProducts.find((item) => item.slug === detailSlug);
 
 const withDetailAssetVersion = (path) => `${path}?v=${detailAssetVersion}`;
+const buildDetailImageCandidates = (path) => {
+  if (!path) {
+    return [];
+  }
+
+  const extensionMatch = path.match(/\.(png|jpg|jpeg)$/i);
+
+  if (!extensionMatch) {
+    return [path];
+  }
+
+  const basePath = path.slice(0, -extensionMatch[0].length);
+  return [`${basePath}.png`, `${basePath}.jpg`, `${basePath}.jpeg`];
+};
+const getVersionedDetailImageCandidates = (path) => buildDetailImageCandidates(path).map(withDetailAssetVersion);
 
 const sanitizeQuantity = (value) => {
   const parsedValue = Number.parseInt(value, 10);
@@ -184,9 +199,10 @@ const renderProductDetail = () => {
               <img
                 class="detail-product-image detail-product-image-front"
                 id="detail-product-image-front"
-                src="${withDetailAssetVersion(initialFrontView?.src || detailProduct.src)}"
+                src="${getVersionedDetailImageCandidates(initialFrontView?.src || detailProduct.src)[0] || withDetailAssetVersion(detailProduct.src)}"
                 alt="${initialFrontView?.alt || detailProduct.alt}"
                 data-fallback-src="${withDetailAssetVersion(detailProduct.src)}"
+                data-source-candidates="${getVersionedDetailImageCandidates(initialFrontView?.src || detailProduct.src).slice(1).join('|')}"
                 data-view-id="front"
               />
               ${hasImageRotation
@@ -194,10 +210,11 @@ const renderProductDetail = () => {
                   <img
                     class="detail-product-image detail-product-image-back"
                     id="detail-product-image-back"
-                    src="${withDetailAssetVersion(initialBackView.src)}"
+                    src="${getVersionedDetailImageCandidates(initialBackView.src)[0] || withDetailAssetVersion(detailProduct.src)}"
                     alt=""
                     aria-hidden="true"
                     data-fallback-src="${withDetailAssetVersion(detailProduct.src)}"
+                    data-source-candidates="${getVersionedDetailImageCandidates(initialBackView.src).slice(1).join('|')}"
                     data-view-id="back"
                   />
                 `
@@ -269,14 +286,25 @@ const renderProductDetail = () => {
     }
 
     imageElement.onerror = () => {
+      const sourceCandidates = (imageElement.dataset.sourceCandidates || '')
+        .split('|')
+        .filter(Boolean);
       const fallbackSrc = imageElement.dataset.fallbackSrc;
+      const fallbackCandidates = getVersionedDetailImageCandidates(fallbackSrc);
+      const nextCandidate =
+        sourceCandidates.find((candidate) => candidate !== imageElement.src)
+        || fallbackCandidates.find((candidate) => candidate !== imageElement.src);
 
-      if (!fallbackSrc || imageElement.dataset.fallbackApplied === 'true') {
+      if (!nextCandidate || imageElement.dataset.fallbackApplied === 'true') {
         return;
       }
 
-      imageElement.dataset.fallbackApplied = 'true';
-      imageElement.src = fallbackSrc;
+      const isFallbackCandidate = fallbackCandidates.includes(nextCandidate);
+      imageElement.dataset.sourceCandidates = sourceCandidates
+        .filter((candidate) => candidate !== nextCandidate)
+        .join('|');
+      imageElement.dataset.fallbackApplied = isFallbackCandidate ? 'true' : 'false';
+      imageElement.src = nextCandidate;
     };
 
     imageElement.onload = () => {
@@ -306,14 +334,16 @@ const renderProductDetail = () => {
 
     if (frontProductImage && frontView) {
       frontProductImage.dataset.fallbackApplied = 'false';
-      frontProductImage.src = withDetailAssetVersion(frontView.src);
+      frontProductImage.dataset.sourceCandidates = getVersionedDetailImageCandidates(frontView.src).slice(1).join('|');
+      frontProductImage.src = getVersionedDetailImageCandidates(frontView.src)[0] || withDetailAssetVersion(frontView.src);
       frontProductImage.alt = frontView.alt || detailProduct.alt;
       frontProductImage.dataset.viewId = 'front';
     }
 
     if (backProductImage && backView) {
       backProductImage.dataset.fallbackApplied = 'false';
-      backProductImage.src = withDetailAssetVersion(backView.src);
+      backProductImage.dataset.sourceCandidates = getVersionedDetailImageCandidates(backView.src).slice(1).join('|');
+      backProductImage.src = getVersionedDetailImageCandidates(backView.src)[0] || withDetailAssetVersion(backView.src);
       backProductImage.dataset.viewId = 'back';
     }
 

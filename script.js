@@ -11,7 +11,7 @@ const bagAsset = './assets/bag.png';
 const shirtAsset = './assets/shirt.png';
 const headerLogoAsset = './assets/logo.png';
 const slideshowAssets = ['./assets/SL1.png', './assets/SL2.png', './assets/SL3.png'];
-const assetVersion = '20260618p';
+const assetVersion = '20260824a';
 const faviconAssetCandidates = [
   './assets/car.png',
   './assets/tab-icon.png',
@@ -40,11 +40,30 @@ const bagVariantFronts = ((bagProduct && Array.isArray(bagProduct.variants)) ? b
     };
   })
   .filter(Boolean);
+const buildImageCandidates = (path) => {
+  if (!path) {
+    return [];
+  }
+
+  const extensionMatch = path.match(/\.(png|jpg|jpeg)$/i);
+
+  if (!extensionMatch) {
+    return [path];
+  }
+
+  const basePath = path.slice(0, -extensionMatch[0].length);
+  return [`${basePath}.png`, `${basePath}.jpg`, `${basePath}.jpeg`];
+};
+
+const withAssetVersion = (path) => `${path}?v=${assetVersion}`;
+const getVersionedImageCandidates = (path) => buildImageCandidates(path).map(withAssetVersion);
+
 const shirtViews = ((shirtProduct && Array.isArray(shirtProduct.views)) ? shirtProduct.views : [])
   .map((view) => ({
     id: view.id,
     label: view.label,
     src: view.src,
+    sources: getVersionedImageCandidates(view.src),
     alt: view.alt || shirtProduct.alt || shirtProduct.name
   }))
   .filter(Boolean);
@@ -74,17 +93,31 @@ const formatList = (items) => {
 const storeSummary = formatList(availableStores.map((store) => store.name));
 const landingWhatsappHref = `https://wa.me/${whatsappNumber}`;
 
-const withAssetVersion = (path) => `${path}?v=${assetVersion}`;
-
 const applyImageFallback = (event, fallbackSrc) => {
   const image = event.currentTarget;
 
-  if (!image || !fallbackSrc || image.dataset.fallbackApplied === 'true') {
+  if (!image) {
     return;
   }
 
-  image.dataset.fallbackApplied = 'true';
-  image.src = withAssetVersion(fallbackSrc);
+  const sourceCandidates = (image.dataset.sourceCandidates || '')
+    .split('|')
+    .filter(Boolean);
+  const fallbackCandidates = getVersionedImageCandidates(fallbackSrc);
+  const nextCandidate =
+    sourceCandidates.find((candidate) => candidate !== image.src)
+    || fallbackCandidates.find((candidate) => candidate !== image.src);
+
+  if (!nextCandidate || image.dataset.fallbackApplied === 'true') {
+    return;
+  }
+
+  const isFallbackCandidate = fallbackCandidates.includes(nextCandidate);
+  image.dataset.sourceCandidates = sourceCandidates
+    .filter((candidate) => candidate !== nextCandidate)
+    .join('|');
+  image.dataset.fallbackApplied = isFallbackCandidate ? 'true' : 'false';
+  image.src = nextCandidate;
 };
 
 function ProductPhoto({ className, src, alt = '', ariaHidden = false }) {
@@ -153,8 +186,9 @@ function App() {
             <div key=${view.id} className="carousel-card-image-tile">
               <img
                 className="carousel-card-image carousel-card-image-variant"
-                src=${withAssetVersion(view.src)}
+                src=${view.sources[0] || withAssetVersion(view.src)}
                 alt=${view.alt}
+                data-source-candidates=${(view.sources || []).slice(1).join('|')}
                 onError=${(event) => applyImageFallback(event, product.src)}
               />
             </div>
