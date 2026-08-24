@@ -28,6 +28,20 @@ window.TOP_PRO_DATA = {
       price: 'Pronto disponible',
       src: './assets/shirt.png',
       alt: 'Remera Top Pro',
+      carouselViews: [
+        {
+          id: 'front',
+          label: 'Frente',
+          src: './assets/shirt-carousel-front.png',
+          alt: 'Remera Top Pro para carrusel de frente'
+        },
+        {
+          id: 'back',
+          label: 'Dorso',
+          src: './assets/shirt-carousel-back.png',
+          alt: 'Remera Top Pro para carrusel de dorso'
+        }
+      ],
       views: [
         {
           id: 'front',

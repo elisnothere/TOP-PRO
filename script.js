@@ -58,7 +58,7 @@ const buildImageCandidates = (path) => {
 const withAssetVersion = (path) => `${path}?v=${assetVersion}`;
 const getVersionedImageCandidates = (path) => buildImageCandidates(path).map(withAssetVersion);
 
-const shirtViews = ((shirtProduct && Array.isArray(shirtProduct.views)) ? shirtProduct.views : [])
+const shirtCarouselViews = ((shirtProduct && Array.isArray(shirtProduct.carouselViews)) ? shirtProduct.carouselViews : (shirtProduct?.views || []))
   .map((view) => ({
     id: view.id,
     label: view.label,
@@ -179,10 +179,10 @@ function App() {
       `;
     }
 
-    if (product.slug === 'remera-top-pro' && shirtViews.length > 0) {
+    if (product.slug === 'remera-top-pro' && shirtCarouselViews.length > 0) {
       return html`
         <div className="carousel-card-image-grid">
-          ${shirtViews.map((view) => html`
+          ${shirtCarouselViews.map((view) => html`
             <div key=${view.id} className="carousel-card-image-tile">
               <img
                 className="carousel-card-image carousel-card-image-variant"
