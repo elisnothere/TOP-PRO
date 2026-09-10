@@ -93,15 +93,6 @@ const formatList = (items) => {
 const storeSummary = formatList(availableStores.map((store) => store.name));
 const landingWhatsappHref = `https://wa.me/${whatsappNumber}`;
 
-const addProductToCart = (product) => {
-  if (!window.TopProCart?.addProduct) {
-    window.location.href = product.page || 'productos.html';
-    return;
-  }
-
-  window.TopProCart.addProduct(product, { quantity: 1 });
-};
-
 const applyImageFallback = (event, fallbackSrc) => {
   const image = event.currentTarget;
 
@@ -231,14 +222,6 @@ function App() {
             <span>${product.label}</span>
             <h3>${product.name}</h3>
             <p>${product.description}</p>
-            <button
-              className="button button-primary carousel-card-add"
-              type="button"
-              tabIndex=${isDuplicate ? -1 : 0}
-              onClick=${() => addProductToCart(product)}
-            >
-              Agregar a carrito
-            </button>
           </div>
         </article>
       `;
@@ -262,14 +245,6 @@ function App() {
             <strong className="carousel-card-cta">Ver detalle</strong>
           </div>
         </a>
-        <button
-          className="button button-primary carousel-card-add"
-          type="button"
-          tabIndex=${isDuplicate ? -1 : 0}
-          onClick=${() => addProductToCart(product)}
-        >
-          Agregar a carrito
-        </button>
       </article>
     `;
   };

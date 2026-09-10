@@ -971,12 +971,6 @@ main {
   color: var(--ink);
 }
 
-.carousel-card-add {
-  align-self: end;
-  width: 100%;
-  margin-top: auto;
-}
-
 @keyframes productCarouselScroll {
   from {
     transform: translateX(0);
