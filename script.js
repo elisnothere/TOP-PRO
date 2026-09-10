@@ -11,7 +11,7 @@ const bagAsset = './assets/bag.png';
 const shirtAsset = './assets/shirt.png';
 const headerLogoAsset = './assets/logo.png';
 const slideshowAssets = ['./assets/SL1.png', './assets/SL2.png', './assets/SL3.png'];
-const assetVersion = '20260824a';
+const assetVersion = '20260910b';
 const faviconAssetCandidates = [
   './assets/car.png',
   './assets/tab-icon.png',
@@ -55,7 +55,7 @@ const buildImageCandidates = (path) => {
   return [`${basePath}.png`, `${basePath}.jpg`, `${basePath}.jpeg`];
 };
 
-const withAssetVersion = (path) => `${path}?v=${assetVersion}`;
+const withAssetVersion = (path) => /^(data:|blob:)/.test(String(path || '')) ? path : `${path}?v=${assetVersion}`;
 const getVersionedImageCandidates = (path) => buildImageCandidates(path).map(withAssetVersion);
 
 const shirtCarouselViews = ((shirtProduct && Array.isArray(shirtProduct.carouselViews)) ? shirtProduct.carouselViews : (shirtProduct?.views || []))

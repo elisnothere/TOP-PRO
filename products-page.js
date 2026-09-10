@@ -1,10 +1,10 @@
 const productsPageData = window.TOP_PRO_DATA || {};
 const catalogProducts = productsPageData.products || [];
 const productsPageRoot = document.getElementById('products-page-root');
-const productsPageAssetVersion = '20260618p';
+const productsPageAssetVersion = '20260910b';
 const productsPageLogoAsset = './assets/logo.png';
 
-const withProductsAssetVersion = (path) => `${path}?v=${productsPageAssetVersion}`;
+const withProductsAssetVersion = (path) => /^(data:|blob:)/.test(String(path || '')) ? path : `${path}?v=${productsPageAssetVersion}`;
 
 const getCatalogProductMediaMarkup = (product) => {
   const productVariants = Array.isArray(product.variants) ? product.variants : [];

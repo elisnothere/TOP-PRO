@@ -1,14 +1,14 @@
 const detailData = window.TOP_PRO_DATA || {};
 const detailProducts = detailData.products || [];
 const detailWhatsappNumber = detailData.whatsappNumber || '595986732551';
-const detailAssetVersion = '20260824a';
+const detailAssetVersion = '20260910b';
 const detailLogoAsset = './assets/logo.png';
 const detailRoot = document.getElementById('product-page-root');
-const detailSlug = document.body.dataset.productSlug || '';
+const detailSlug = document.body.dataset.productSlug || new URLSearchParams(window.location.search).get('slug') || '';
 
 const detailProduct = detailProducts.find((item) => item.slug === detailSlug);
 
-const withDetailAssetVersion = (path) => `${path}?v=${detailAssetVersion}`;
+const withDetailAssetVersion = (path) => /^(data:|blob:)/.test(String(path || '')) ? path : `${path}?v=${detailAssetVersion}`;
 const buildDetailImageCandidates = (path) => {
   if (!path) {
     return [];
