@@ -1,8 +1,11 @@
 (function () {
   const USERS_KEY = 'top-pro-users';
   const SESSION_KEY = 'top-pro-session';
+  const TOKEN_KEY = 'top-pro-api-token';
   const ADMIN_EMAIL = 'admin@toppro.com';
   const ADMIN_PASSWORD = 'TopProAdmin2026';
+  const API_BASE = `${window.location.origin}/api`;
+  let cachedUsers = [];
 
   const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
 
@@ -67,14 +70,40 @@
   };
 
   const getUsers = () => ensureAdminAccount();
+  const getToken = () => localStorage.getItem(TOKEN_KEY) || '';
 
-  const setSession = (user) => {
+  const apiRequest = async (path, options = {}) => {
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    };
+    const token = getToken();
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(payload.error || 'No se pudo completar la accion.');
+    }
+
+    return payload;
+  };
+
+  const setSession = (user, token = '') => {
     const sessionUser = getPublicUser(user);
 
     if (sessionUser) {
       localStorage.setItem(SESSION_KEY, JSON.stringify(sessionUser));
+      if (token) {
+        localStorage.setItem(TOKEN_KEY, token);
+      }
     } else {
       localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(TOKEN_KEY);
     }
 
     window.dispatchEvent(new CustomEvent('toppro-auth-change', { detail: sessionUser }));
@@ -119,7 +148,17 @@
     });
   };
 
-  const register = ({ name, email, password }) => {
+  const getRemoteUsers = async () => {
+    try {
+      const payload = await apiRequest('/users', { method: 'GET' });
+      cachedUsers = Array.isArray(payload.users) ? payload.users : [];
+      return cachedUsers;
+    } catch (error) {
+      return getUsers().map(getPublicUser);
+    }
+  };
+
+  const register = async ({ name, email, password }) => {
     const cleanName = String(name || '').trim();
     const cleanEmail = normalizeEmail(email);
     const cleanPassword = String(password || '');
@@ -134,6 +173,18 @@
 
     if (cleanPassword.length < 6) {
       return { ok: false, message: 'La contraseña debe tener al menos 6 caracteres.' };
+    }
+
+    try {
+      const payload = await apiRequest('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ name: cleanName, email: cleanEmail, password: cleanPassword })
+      });
+      return { ok: true, user: setSession(payload.user, payload.token), message: 'Cuenta creada correctamente.' };
+    } catch (error) {
+      if (window.location.protocol !== 'file:') {
+        return { ok: false, message: error.message };
+      }
     }
 
     const users = getUsers();
@@ -156,8 +207,21 @@
     return { ok: true, user: setSession(user), message: 'Cuenta creada correctamente.' };
   };
 
-  const login = ({ email, password }) => {
+  const login = async ({ email, password }) => {
     const cleanEmail = normalizeEmail(email);
+
+    try {
+      const payload = await apiRequest('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email: cleanEmail, password })
+      });
+      return { ok: true, user: setSession(payload.user, payload.token), message: 'Sesion iniciada.' };
+    } catch (error) {
+      if (window.location.protocol !== 'file:') {
+        return { ok: false, message: error.message };
+      }
+    }
+
     const users = getUsers();
     const user = users.find((candidate) => normalizeEmail(candidate.email) === cleanEmail);
 
@@ -213,7 +277,10 @@
   window.TopProAuth = {
     adminEmail: ADMIN_EMAIL,
     getUsers,
+    getRemoteUsers,
+    getCachedUsers: () => cachedUsers,
     getCurrentUser,
+    getToken,
     register,
     login,
     logout,

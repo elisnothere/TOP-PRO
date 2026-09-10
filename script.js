@@ -158,6 +158,7 @@ function App() {
   const [hasHeaderLogo, setHasHeaderLogo] = useState(false);
   const [heroAssets, setHeroAssets] = useState({ bagPrimary: false, bagSecondary: false, shirt: false });
   const [backdropSlides, setBackdropSlides] = useState([]);
+  const [carouselProducts, setCarouselProducts] = useState(() => window.TopProProducts?.getProducts?.() || availableProducts);
   const carouselShellRef = useRef(null);
   const carouselGroupRef = useRef(null);
 
@@ -246,6 +247,17 @@ function App() {
       </a>
     `;
   };
+
+  useEffect(() => {
+    const syncProducts = () => {
+      setCarouselProducts(window.TopProProducts?.getProducts?.() || availableProducts);
+    };
+
+    window.addEventListener('toppro-products-change', syncProducts);
+    syncProducts();
+
+    return () => window.removeEventListener('toppro-products-change', syncProducts);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -661,10 +673,10 @@ function App() {
           >
             <div className="product-carousel-track">
               <div className="product-carousel-group" ref=${carouselGroupRef}>
-                ${availableProducts.map((product, index) => renderCarouselCard(product, index))}
+                ${carouselProducts.map((product, index) => renderCarouselCard(product, index))}
               </div>
               <div className="product-carousel-group" aria-hidden="true">
-                ${availableProducts.map((product, index) => renderCarouselCard(product, index, 'duplicate'))}
+                ${carouselProducts.map((product, index) => renderCarouselCard(product, index, 'duplicate'))}
               </div>
             </div>
           </div>

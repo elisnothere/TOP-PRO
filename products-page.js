@@ -1,10 +1,9 @@
-const productsPageData = window.TOP_PRO_DATA || {};
-const catalogProducts = productsPageData.products || [];
 const productsPageRoot = document.getElementById('products-page-root');
 const productsPageAssetVersion = '20260910b';
 const productsPageLogoAsset = './assets/logo.png';
 
 const withProductsAssetVersion = (path) => /^(data:|blob:)/.test(String(path || '')) ? path : `${path}?v=${productsPageAssetVersion}`;
+const getCatalogProducts = () => window.TopProProducts?.getProducts?.() || window.TOP_PRO_DATA?.products || [];
 
 const getCatalogProductMediaMarkup = (product) => {
   const productVariants = Array.isArray(product.variants) ? product.variants : [];
@@ -62,32 +61,17 @@ const setupProductsNavigation = () => {
     toggle.setAttribute('aria-expanded', String(open));
   };
 
-  const onKeyDown = (event) => {
-    if (event.key === 'Escape') {
-      setOpen(false);
-    }
-  };
-
-  toggle.addEventListener('click', () => {
-    setOpen(!topbar.classList.contains('is-open'));
-  });
-
+  toggle.addEventListener('click', () => setOpen(!topbar.classList.contains('is-open')));
   backdrop.addEventListener('click', () => setOpen(false));
-
-  nav.querySelectorAll('a').forEach((link) => {
-    link.addEventListener('click', () => setOpen(false));
-  });
-
-  window.addEventListener('keydown', onKeyDown);
-
-  window.addEventListener('resize', () => {
-    if (window.innerWidth > 760) {
-      setOpen(false);
-    }
-  });
+  nav.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setOpen(false)));
 };
 
-if (productsPageRoot) {
+const renderProductsPage = () => {
+  if (!productsPageRoot) {
+    return;
+  }
+
+  const catalogProducts = getCatalogProducts();
   const productCardsMarkup = catalogProducts.length
     ? catalogProducts.map(
       (product) => `
@@ -133,12 +117,7 @@ if (productsPageRoot) {
           </span>
         </a>
 
-        <button
-          class="nav-toggle"
-          type="button"
-          aria-expanded="false"
-          aria-controls="products-nav"
-        >
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="products-nav">
           <span></span>
           <span></span>
           <span></span>
@@ -178,4 +157,8 @@ if (productsPageRoot) {
   `;
 
   setupProductsNavigation();
-}
+  window.TopProAuth?.enhanceNavigation?.();
+};
+
+window.addEventListener('toppro-products-change', renderProductsPage);
+renderProductsPage();

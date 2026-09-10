@@ -6,7 +6,12 @@ const detailLogoAsset = './assets/logo.png';
 const detailRoot = document.getElementById('product-page-root');
 const detailSlug = document.body.dataset.productSlug || new URLSearchParams(window.location.search).get('slug') || '';
 
-const detailProduct = detailProducts.find((item) => item.slug === detailSlug);
+let detailProduct = detailProducts.find((item) => item.slug === detailSlug);
+
+const getCurrentDetailProduct = () => {
+  const products = window.TopProProducts?.getProducts?.() || window.TOP_PRO_DATA?.products || detailProducts;
+  return products.find((item) => item.slug === detailSlug) || null;
+};
 
 const withDetailAssetVersion = (path) => /^(data:|blob:)/.test(String(path || '')) ? path : `${path}?v=${detailAssetVersion}`;
 const buildDetailImageCandidates = (path) => {
@@ -107,6 +112,8 @@ const renderProductDetail = () => {
   if (!detailRoot) {
     return;
   }
+
+  detailProduct = getCurrentDetailProduct();
 
   if (!detailProduct) {
     renderMissingProduct();
@@ -384,4 +391,5 @@ const renderProductDetail = () => {
   syncWhatsappLink();
 };
 
+window.addEventListener('toppro-products-change', renderProductDetail);
 renderProductDetail();

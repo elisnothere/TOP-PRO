@@ -104,7 +104,7 @@ const renderProductRows = (products) => products.map((product) => `
   </article>
 `).join('');
 
-const renderAdminPage = () => {
+const renderAdminPage = async () => {
   if (!adminRoot || !adminAuth || !productStore) {
     return;
   }
@@ -128,7 +128,7 @@ const renderAdminPage = () => {
     return;
   }
 
-  const users = adminAuth.getUsers();
+  const users = await adminAuth.getRemoteUsers();
   const products = productStore.getProducts();
   const editingProduct = editingProductSlug ? productStore.getProduct(editingProductSlug) : null;
   const customerCount = users.filter((user) => user.role !== 'admin').length;
@@ -311,15 +311,15 @@ const bindAdminEvents = () => {
   }
 
   document.querySelectorAll('[data-edit-product]').forEach((button) => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', async () => {
       editingProductSlug = button.dataset.editProduct;
-      renderAdminPage();
+      await renderAdminPage();
       document.querySelector('.admin-product-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
 
   document.querySelectorAll('[data-delete-product]').forEach((button) => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', async () => {
       const slug = button.dataset.deleteProduct;
       const product = productStore.getProduct(slug);
 
@@ -327,13 +327,13 @@ const bindAdminEvents = () => {
         return;
       }
 
-      productStore.deleteProduct(slug);
+      await productStore.deleteProduct(slug);
 
       if (editingProductSlug === slug) {
         editingProductSlug = '';
       }
 
-      renderAdminPage();
+      await renderAdminPage();
     });
   });
 
@@ -354,19 +354,23 @@ const bindAdminEvents = () => {
       }
 
       if (editingProductSlug) {
-        productStore.updateProduct(editingProductSlug, payload);
+        await productStore.updateProduct(editingProductSlug, payload);
         editingProductSlug = '';
-        renderAdminPage();
+        await renderAdminPage();
         return;
       }
 
-      productStore.createProduct(payload);
+      await productStore.createProduct(payload);
       form.reset();
-      renderAdminPage();
+      await renderAdminPage();
     } catch (error) {
       setFormMessage(error.message || 'No se pudo guardar el producto.', 'error');
     }
   });
 };
+
+window.addEventListener('toppro-products-change', () => {
+  renderAdminPage();
+});
 
 renderAdminPage();

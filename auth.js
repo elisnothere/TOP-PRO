@@ -140,7 +140,7 @@ const renderAuthPage = () => {
     return;
   }
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const formData = new FormData(form);
@@ -149,7 +149,7 @@ const renderAuthPage = () => {
       email: formData.get('email'),
       password: formData.get('password')
     };
-    const result = isRegisterMode ? auth.register(payload) : auth.login(payload);
+    const result = isRegisterMode ? await auth.register(payload) : await auth.login(payload);
 
     if (!result.ok) {
       setAuthMessage(result.message, 'error');
