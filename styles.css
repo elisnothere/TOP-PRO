@@ -1926,8 +1926,8 @@ main {
 
 .cart-summary {
   display: grid;
-  justify-self: end;
-  width: min(100%, 560px);
+  justify-self: stretch;
+  width: 100%;
   gap: 18px;
   padding: 22px;
   border: 1px solid rgba(255, 255, 255, 0.62);
@@ -1945,7 +1945,7 @@ main {
 
 .cart-summary-actions {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -3628,8 +3628,7 @@ body.menu-open {
   }
 
   .cart-summary-actions {
-    justify-content: stretch;
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
   .cart-item-image {
