@@ -93,6 +93,15 @@ const formatList = (items) => {
 const storeSummary = formatList(availableStores.map((store) => store.name));
 const landingWhatsappHref = `https://wa.me/${whatsappNumber}`;
 
+const addProductToCart = (product) => {
+  if (!window.TopProCart?.addProduct) {
+    window.location.href = product.page || 'productos.html';
+    return;
+  }
+
+  window.TopProCart.addProduct(product, { quantity: 1 });
+};
+
 const applyImageFallback = (event, fallbackSrc) => {
   const image = event.currentTarget;
 
@@ -210,6 +219,7 @@ function App() {
 
   const renderCarouselCard = (product, index, keyPrefix = 'primary') => {
     const key = `${keyPrefix}-${product.name}-${index}`;
+    const isDuplicate = keyPrefix === 'duplicate';
 
     if (!product.page) {
       return html`
@@ -221,19 +231,27 @@ function App() {
             <span>${product.label}</span>
             <h3>${product.name}</h3>
             <p>${product.description}</p>
+            <button
+              className="button button-primary carousel-card-add"
+              type="button"
+              tabIndex=${isDuplicate ? -1 : 0}
+              onClick=${() => addProductToCart(product)}
+            >
+              Agregar a carrito
+            </button>
           </div>
         </article>
       `;
     }
 
     return html`
-      <a
-        key=${key}
-        className="carousel-card-link"
-        href=${product.page}
-        aria-label=${`Ver detalle de ${product.name}`}
-      >
-        <article className="carousel-card">
+      <article key=${key} className="carousel-card">
+        <a
+          className="carousel-card-link"
+          href=${product.page}
+          aria-label=${`Ver detalle de ${product.name}`}
+          tabIndex=${isDuplicate ? -1 : 0}
+        >
           <div className="carousel-card-image-wrap">
             ${renderCarouselMedia(product)}
           </div>
@@ -243,8 +261,16 @@ function App() {
             <p>${product.description}</p>
             <strong className="carousel-card-cta">Ver detalle</strong>
           </div>
-        </article>
-      </a>
+        </a>
+        <button
+          className="button button-primary carousel-card-add"
+          type="button"
+          tabIndex=${isDuplicate ? -1 : 0}
+          onClick=${() => addProductToCart(product)}
+        >
+          Agregar a carrito
+        </button>
+      </article>
     `;
   };
 
@@ -662,7 +688,7 @@ function App() {
             <p className="eyebrow">Productos disponibles</p>
             <h2 id="products-carousel-heading">Productos disponibles:</h2>
             <p> 
-              Hace click en cualquiera de los productos para ir a su pagina dedicada y pedirlo directamente por WhatsApp.
+              Agrega los productos que quieras al carrito y despues podes pedir todo junto por WhatsApp o avanzar al checkout.
             </p>
           </div>
 

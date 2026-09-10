@@ -1,6 +1,5 @@
 const detailData = window.TOP_PRO_DATA || {};
 const detailProducts = detailData.products || [];
-const detailWhatsappNumber = detailData.whatsappNumber || '595986732551';
 const detailAssetVersion = '20260910b';
 const detailLogoAsset = './assets/logo.png';
 const detailRoot = document.getElementById('product-page-root');
@@ -33,12 +32,6 @@ const getVersionedDetailImageCandidates = (path) => buildDetailImageCandidates(p
 const sanitizeQuantity = (value) => {
   const parsedValue = Number.parseInt(value, 10);
   return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : 1;
-};
-
-const createWhatsappHref = (productName, quantity, selectedVariantLabel = '') => {
-  const variantSuffix = selectedVariantLabel ? ` - ${selectedVariantLabel}` : '';
-  const message = `Hola Top Pro, deseo el producto: ${productName}${variantSuffix} ${quantity}`;
-  return `https://wa.me/${detailWhatsappNumber}?text=${encodeURIComponent(message)}`;
 };
 
 const setupDetailNavigation = () => {
@@ -231,7 +224,7 @@ const renderProductDetail = () => {
             ${variantSelectorMarkup}
 
             <div class="request-card">
-              <p class="request-note">Elegi la cantidad y te preparamos el mensaje listo para WhatsApp.</p>
+              <p class="request-note">Elegi la cantidad y guardamos el producto en tu carrito.</p>
               <label class="field-label" for="product-quantity">Cantidad deseada</label>
               <input
                 class="quantity-input"
@@ -243,15 +236,10 @@ const renderProductDetail = () => {
                 inputmode="numeric"
                 value="1"
               />
-              <a
-                class="button button-primary detail-whatsapp-button"
-                id="product-whatsapp-link"
-                href="${createWhatsappHref(detailProduct.name, 1)}"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Pedir a traves de whatsapp
-              </a>
+              <button class="button button-primary detail-cart-button" id="product-cart-button" type="button">
+                Agregar a carrito
+              </button>
+              <a class="button button-secondary" href="carrito.html">Ver carrito</a>
               <a class="button button-secondary" href="productos.html">Volver a productos</a>
             </div>
           </aside>
@@ -261,7 +249,7 @@ const renderProductDetail = () => {
   `;
 
   const quantityInput = detailRoot.querySelector('#product-quantity');
-  const whatsappLink = detailRoot.querySelector('#product-whatsapp-link');
+  const cartButton = detailRoot.querySelector('#product-cart-button');
   const productTitle = detailRoot.querySelector('.detail-copy h1');
   const productPrice = detailRoot.querySelector('.detail-price-card strong');
   const frontProductImage = detailRoot.querySelector('#detail-product-image-front');
@@ -273,7 +261,7 @@ const renderProductDetail = () => {
 
   setupDetailNavigation();
 
-  if (!quantityInput || !whatsappLink) {
+  if (!quantityInput || !cartButton) {
     return;
   }
 
@@ -362,15 +350,30 @@ const renderProductDetail = () => {
     }
   };
 
-  const syncWhatsappLink = () => {
+  const getSelectedCartOptions = () => {
     const quantity = sanitizeQuantity(quantityInput.value);
     const selectedVariant = getSelectedVariant();
-    const selectedVariantLabel = selectedVariant?.whatsappLabel || '';
+    const selectedVariantLabel = selectedVariant?.label || '';
+    const frontView = getVariantView(selectedVariant, 'front');
     quantityInput.value = String(quantity);
-    whatsappLink.href = createWhatsappHref(detailProduct.name, quantity, selectedVariantLabel);
-    whatsappLink.setAttribute(
+    return {
+      quantity,
+      variant: hasDetailVariants ? selectedVariant : null,
+      variantId: selectedVariant?.id || '',
+      variantLabel: selectedVariantLabel,
+      price: selectedVariant?.price || detailProduct.price,
+      image: {
+        src: frontView?.src || detailProduct.src,
+        alt: frontView?.alt || detailProduct.alt
+      }
+    };
+  };
+
+  const syncCartButton = () => {
+    const cartOptions = getSelectedCartOptions();
+    cartButton.setAttribute(
       'aria-label',
-      `Pedir ${detailProduct.name}${selectedVariantLabel ? ` ${selectedVariantLabel}` : ''} en cantidad ${quantity} a traves de WhatsApp`
+      `Agregar ${detailProduct.name}${cartOptions.variantLabel ? ` ${cartOptions.variantLabel}` : ''} en cantidad ${cartOptions.quantity} al carrito`
     );
   };
 
@@ -378,17 +381,26 @@ const renderProductDetail = () => {
     variantSelect.addEventListener('change', () => {
       selectedVariantId = variantSelect.value || selectedVariantId;
       syncVariantState();
-      syncWhatsappLink();
+      syncCartButton();
     });
   }
 
-  quantityInput.addEventListener('input', syncWhatsappLink);
-  quantityInput.addEventListener('blur', syncWhatsappLink);
+  quantityInput.addEventListener('input', syncCartButton);
+  quantityInput.addEventListener('blur', syncCartButton);
+  cartButton.addEventListener('click', () => {
+    window.TopProCart?.addProduct?.(detailProduct, getSelectedCartOptions());
+    cartButton.textContent = 'Agregado';
+    window.setTimeout(() => {
+      cartButton.textContent = 'Agregar a carrito';
+    }, 1200);
+  });
   productImages.forEach((imageElement) => {
     syncImageFallback(imageElement);
   });
   syncVariantState();
-  syncWhatsappLink();
+  syncCartButton();
+  window.TopProAuth?.enhanceNavigation?.();
+  window.TopProCart?.refreshNavigation?.();
 };
 
 window.addEventListener('toppro-products-change', renderProductDetail);

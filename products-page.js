@@ -5,6 +5,8 @@ const productsPageLogoAsset = './assets/logo.png';
 const withProductsAssetVersion = (path) => /^(data:|blob:)/.test(String(path || '')) ? path : `${path}?v=${productsPageAssetVersion}`;
 const getCatalogProducts = () => window.TopProProducts?.getProducts?.() || window.TOP_PRO_DATA?.products || [];
 
+const escapeAttribute = (value) => String(value || '').replace(/"/g, '&quot;');
+
 const getCatalogProductMediaMarkup = (product) => {
   const productVariants = Array.isArray(product.variants) ? product.variants : [];
   const bagVariantFronts = productVariants
@@ -75,8 +77,8 @@ const renderProductsPage = () => {
   const productCardsMarkup = catalogProducts.length
     ? catalogProducts.map(
       (product) => `
-        <a class="catalog-product-link" href="${product.page}" aria-label="Ver detalle de ${product.name}">
-          <article class="catalog-product-card">
+        <article class="catalog-product-card">
+          <a class="catalog-product-link" href="${product.page}" aria-label="Ver detalle de ${product.name}">
             <div class="catalog-product-image-wrap">
               ${getCatalogProductMediaMarkup(product)}
             </div>
@@ -91,8 +93,11 @@ const renderProductsPage = () => {
               <strong class="catalog-product-price">${product.price}</strong>
               <span class="catalog-product-cta">Ver producto</span>
             </div>
-          </article>
-        </a>
+          </a>
+          <button class="button button-primary catalog-cart-button" type="button" data-add-catalog-product="${escapeAttribute(product.slug)}">
+            Agregar a carrito
+          </button>
+        </article>
       `
     ).join('')
     : `
@@ -139,7 +144,7 @@ const renderProductsPage = () => {
             <h1>Productos disponibles:</h1>
             <br/>
             <p class="lede">
-              Revisa precios, conoce cada producto y entra a su pagina dedicada para pedirlo por WhatsApp.
+              Revisa precios, agrega productos al carrito y despues envia el pedido completo por WhatsApp o continua al checkout.
             </p>
           </div>
 
@@ -158,6 +163,21 @@ const renderProductsPage = () => {
 
   setupProductsNavigation();
   window.TopProAuth?.enhanceNavigation?.();
+  window.TopProCart?.refreshNavigation?.();
+
+  productsPageRoot.querySelectorAll('[data-add-catalog-product]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const product = catalogProducts.find((item) => item.slug === button.dataset.addCatalogProduct);
+
+      if (product) {
+        window.TopProCart?.addProduct?.(product, { quantity: 1 });
+        button.textContent = 'Agregado';
+        window.setTimeout(() => {
+          button.textContent = 'Agregar a carrito';
+        }, 1200);
+      }
+    });
+  });
 };
 
 window.addEventListener('toppro-products-change', renderProductsPage);
