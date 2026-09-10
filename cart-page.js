@@ -112,10 +112,6 @@ const renderCartPage = () => {
 
           ${hasItems ? `
             <aside class="cart-summary">
-              <div>
-                <span>Productos</span>
-                <strong>${window.TopProCart.getCount()}</strong>
-              </div>
               ${cartTotal > 0 ? `
                 <div>
                   <span>Total</span>

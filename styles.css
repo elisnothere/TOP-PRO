@@ -1926,10 +1926,10 @@ main {
 
 .cart-summary {
   display: grid;
-  grid-template-columns: minmax(180px, 0.28fr) minmax(0, 1fr);
-  align-items: center;
-  gap: 16px;
-  padding: 18px;
+  justify-self: end;
+  width: min(100%, 560px);
+  gap: 18px;
+  padding: 22px;
   border: 1px solid rgba(255, 255, 255, 0.62);
   border-radius: var(--radius-lg);
   background: linear-gradient(180deg, rgba(255, 248, 239, 0.96), rgba(255, 224, 156, 0.84));
@@ -1938,13 +1938,14 @@ main {
 .cart-summary strong {
   display: block;
   margin-top: 4px;
-  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  line-height: 1;
+  overflow-wrap: anywhere;
 }
 
 .cart-summary-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 
@@ -1975,6 +1976,8 @@ main {
 .checkout-summary {
   grid-template-columns: 1fr;
   align-items: stretch;
+  justify-self: stretch;
+  width: 100%;
 }
 
 .checkout-summary h2 {
@@ -3617,6 +3620,11 @@ body.menu-open {
   .checkout-panel,
   .checkout-form {
     grid-template-columns: 1fr;
+  }
+
+  .cart-summary {
+    justify-self: stretch;
+    width: 100%;
   }
 
   .cart-summary-actions {
