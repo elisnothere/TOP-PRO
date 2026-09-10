@@ -65,6 +65,27 @@
   const getCart = () => readCart();
   const getCount = () => getCart().reduce((total, item) => total + sanitizeQuantity(item.quantity), 0);
 
+  const getUsdPriceValue = (price) => {
+    const normalizedPrice = String(price || '').replace(',', '.');
+    const match = normalizedPrice.match(/(\d+(?:\.\d+)?)/);
+    return match ? Number.parseFloat(match[1]) : null;
+  };
+
+  const formatUsdTotal = (amount) => {
+    const roundedAmount = Math.round((amount + Number.EPSILON) * 100) / 100;
+    return `${roundedAmount.toFixed(2)} USD`;
+  };
+
+  const getTotal = () => getCart().reduce((total, item) => {
+    const priceValue = getUsdPriceValue(item.price);
+
+    if (!Number.isFinite(priceValue)) {
+      return total;
+    }
+
+    return total + (priceValue * sanitizeQuantity(item.quantity));
+  }, 0);
+
   const addProduct = (product, options = {}) => {
     if (!product || !product.slug) {
       return getCart();
@@ -102,9 +123,11 @@
     const productLines = items.map((item) => (
       `- ${sanitizeQuantity(item.quantity)} x ${item.name}${item.price ? ` (${item.price})` : ''}`
     ));
+    const total = getTotal();
     const message = [
       'Hola Top Pro, quiero pedir estos productos:',
       ...productLines,
+      Number.isFinite(total) && total > 0 ? `\nTotal: ${formatUsdTotal(total)}` : '',
       extraMessage ? `\nDatos del pedido:\n${extraMessage}` : ''
     ].filter(Boolean).join('\n');
 
@@ -138,6 +161,8 @@
   window.TopProCart = {
     getCart,
     getCount,
+    getTotal,
+    formatUsdTotal,
     addProduct,
     updateQuantity,
     removeItem,

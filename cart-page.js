@@ -38,6 +38,8 @@ const renderCartPage = () => {
 
   const cartItems = window.TopProCart?.getCart?.() || [];
   const hasItems = cartItems.length > 0;
+  const cartTotal = window.TopProCart?.getTotal?.() || 0;
+  const formattedCartTotal = window.TopProCart?.formatUsdTotal?.(cartTotal) || '';
   const itemsMarkup = hasItems
     ? cartItems.map((item) => `
       <article class="cart-item">
@@ -114,6 +116,12 @@ const renderCartPage = () => {
                 <span>Productos</span>
                 <strong>${window.TopProCart.getCount()}</strong>
               </div>
+              ${cartTotal > 0 ? `
+                <div>
+                  <span>Total</span>
+                  <strong>${formattedCartTotal}</strong>
+                </div>
+              ` : ''}
               <div class="cart-summary-actions">
                 <a class="button button-primary" id="cart-whatsapp-link" href="${window.TopProCart.buildWhatsAppHref()}" target="_blank" rel="noopener noreferrer">
                   Pedir por WhatsApp
