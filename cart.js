@@ -86,8 +86,35 @@
     return total + (priceValue * sanitizeQuantity(item.quantity));
   }, 0);
 
+  const canAddProduct = (product) => {
+    if (!product) {
+      return false;
+    }
+
+    const stock = Number.parseInt(product.stock, 10) || 0;
+    return stock > 0 || product.allowPreorder === true;
+  };
+
+  const getAvailabilityLabel = (product) => {
+    const stock = Number.parseInt(product?.stock, 10) || 0;
+
+    if (stock > 0) {
+      return `Stock disponible: ${stock}`;
+    }
+
+    if (product?.allowPreorder === true) {
+      return 'Sin stock inmediato · Pre-reserva disponible';
+    }
+
+    return 'Sin stock';
+  };
+
   const addProduct = (product, options = {}) => {
     if (!product || !product.slug) {
+      return getCart();
+    }
+
+    if (!canAddProduct(product)) {
       return getCart();
     }
 
@@ -163,6 +190,8 @@
     getCount,
     getTotal,
     formatUsdTotal,
+    canAddProduct,
+    getAvailabilityLabel,
     addProduct,
     updateQuantity,
     removeItem,

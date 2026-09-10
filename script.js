@@ -153,12 +153,17 @@ const highlights = [
   'Mejor calidad de productos para Co-pilotos en el mercado.'
 ];
 
+const getCarouselVisibleProducts = () => (
+  (window.TopProProducts?.getProducts?.() || availableProducts)
+    .filter((product) => product.showInCarousel !== false)
+);
+
 function App() {
   const [navOpen, setNavOpen] = useState(false);
   const [hasHeaderLogo, setHasHeaderLogo] = useState(false);
   const [heroAssets, setHeroAssets] = useState({ bagPrimary: false, bagSecondary: false, shirt: false });
   const [backdropSlides, setBackdropSlides] = useState([]);
-  const [carouselProducts, setCarouselProducts] = useState(() => window.TopProProducts?.getProducts?.() || availableProducts);
+  const [carouselProducts, setCarouselProducts] = useState(() => getCarouselVisibleProducts());
   const carouselShellRef = useRef(null);
   const carouselGroupRef = useRef(null);
 
@@ -251,7 +256,7 @@ function App() {
 
   useEffect(() => {
     const syncProducts = () => {
-      setCarouselProducts(window.TopProProducts?.getProducts?.() || availableProducts);
+      setCarouselProducts(getCarouselVisibleProducts());
     };
 
     window.addEventListener('toppro-products-change', syncProducts);

@@ -106,7 +106,10 @@ const prepareProduct = (product) => ({
   alt: product.alt || product.name || 'Producto Top Pro',
   variants: Array.isArray(product.variants) ? product.variants : [],
   views: Array.isArray(product.views) ? product.views : [],
-  carouselViews: Array.isArray(product.carouselViews) ? product.carouselViews : []
+  carouselViews: Array.isArray(product.carouselViews) ? product.carouselViews : [],
+  stock: Number.isFinite(Number(product.stock)) ? Math.max(0, Number.parseInt(product.stock, 10)) : 0,
+  allowPreorder: product.allowPreorder !== false,
+  showInCarousel: product.showInCarousel !== false
 });
 
 db.exec(`
@@ -140,12 +143,27 @@ db.exec(`
     variants TEXT NOT NULL DEFAULT '[]',
     views TEXT NOT NULL DEFAULT '[]',
     carousel_views TEXT NOT NULL DEFAULT '[]',
+    stock INTEGER NOT NULL DEFAULT 0,
+    allow_preorder INTEGER NOT NULL DEFAULT 1,
+    show_in_carousel INTEGER NOT NULL DEFAULT 1,
     is_seed INTEGER NOT NULL DEFAULT 0,
     is_deleted INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 `);
+
+const ensureProductColumn = (name, definition) => {
+  const columns = db.prepare('PRAGMA table_info(products)').all();
+
+  if (!columns.some((column) => column.name === name)) {
+    db.exec(`ALTER TABLE products ADD COLUMN ${name} ${definition}`);
+  }
+};
+
+ensureProductColumn('stock', 'INTEGER NOT NULL DEFAULT 0');
+ensureProductColumn('allow_preorder', 'INTEGER NOT NULL DEFAULT 1');
+ensureProductColumn('show_in_carousel', 'INTEGER NOT NULL DEFAULT 1');
 
 const userCount = db.prepare('SELECT COUNT(*) AS total FROM users').get().total;
 
@@ -161,9 +179,9 @@ loadCatalogProducts().forEach((product) => {
   db.prepare(`
     INSERT OR IGNORE INTO products (
       slug, page, name, label, description, detail_description, price, src, alt,
-      variants, views, carousel_views, is_seed, created_at, updated_at
+      variants, views, carousel_views, stock, allow_preorder, show_in_carousel, is_seed, created_at, updated_at
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
   `).run(
     prepared.slug,
     prepared.page,
@@ -177,6 +195,9 @@ loadCatalogProducts().forEach((product) => {
     JSON.stringify(prepared.variants),
     JSON.stringify(prepared.views),
     JSON.stringify(prepared.carouselViews),
+    prepared.stock,
+    prepared.allowPreorder ? 1 : 0,
+    prepared.showInCarousel ? 1 : 0,
     new Date().toISOString(),
     new Date().toISOString()
   );
@@ -204,6 +225,9 @@ const rowToProduct = (row) => ({
   variants: parseJsonArray(row.variants),
   views: parseJsonArray(row.views),
   carouselViews: parseJsonArray(row.carousel_views),
+  stock: Number.parseInt(row.stock, 10) || 0,
+  allowPreorder: Boolean(row.allow_preorder),
+  showInCarousel: Boolean(row.show_in_carousel),
   isCustom: !row.is_seed
 });
 
@@ -287,7 +311,10 @@ const normalizeProductPayload = (payload, existingProduct = null) => {
     alt: String(payload.alt || '').trim() || name,
     variants: Array.isArray(payload.variants) ? payload.variants : existingProduct?.variants || [],
     views: Array.isArray(payload.views) ? payload.views : existingProduct?.views || [],
-    carouselViews: Array.isArray(payload.carouselViews) ? payload.carouselViews : existingProduct?.carouselViews || []
+    carouselViews: Array.isArray(payload.carouselViews) ? payload.carouselViews : existingProduct?.carouselViews || [],
+    stock: Math.max(0, Number.parseInt(payload.stock, 10) || 0),
+    allowPreorder: Boolean(payload.allowPreorder),
+    showInCarousel: payload.showInCarousel !== false
   };
 };
 
@@ -373,9 +400,9 @@ const handleApiRequest = async (req, res, url) => {
     db.prepare(`
       INSERT INTO products (
         slug, page, name, label, description, detail_description, price, src, alt,
-        variants, views, carousel_views, is_seed, is_deleted, created_at, updated_at
+        variants, views, carousel_views, stock, allow_preorder, show_in_carousel, is_seed, is_deleted, created_at, updated_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?)
     `).run(
       slug,
       `producto.html?slug=${slug}`,
@@ -389,6 +416,9 @@ const handleApiRequest = async (req, res, url) => {
       JSON.stringify(payload.variants),
       JSON.stringify(payload.views),
       JSON.stringify(payload.carouselViews),
+      payload.stock,
+      payload.allowPreorder ? 1 : 0,
+      payload.showInCarousel ? 1 : 0,
       now,
       now
     );
@@ -423,7 +453,8 @@ const handleApiRequest = async (req, res, url) => {
     db.prepare(`
       UPDATE products
       SET slug = ?, page = ?, name = ?, label = ?, description = ?, detail_description = ?,
-        price = ?, src = ?, alt = ?, variants = ?, views = ?, carousel_views = ?, updated_at = ?
+        price = ?, src = ?, alt = ?, variants = ?, views = ?, carousel_views = ?,
+        stock = ?, allow_preorder = ?, show_in_carousel = ?, updated_at = ?
       WHERE slug = ?
     `).run(
       nextSlug,
@@ -438,6 +469,9 @@ const handleApiRequest = async (req, res, url) => {
       JSON.stringify(payload.variants),
       JSON.stringify(payload.views),
       JSON.stringify(payload.carouselViews),
+      payload.stock,
+      payload.allowPreorder ? 1 : 0,
+      payload.showInCarousel ? 1 : 0,
       new Date().toISOString(),
       slug
     );

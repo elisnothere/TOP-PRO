@@ -76,7 +76,11 @@ const renderProductsPage = () => {
   const catalogProducts = getCatalogProducts();
   const productCardsMarkup = catalogProducts.length
     ? catalogProducts.map(
-      (product) => `
+      (product) => {
+        const canAddToCart = window.TopProCart?.canAddProduct?.(product) ?? true;
+        const availabilityLabel = window.TopProCart?.getAvailabilityLabel?.(product) || '';
+
+        return `
         <article class="catalog-product-card">
           <a class="catalog-product-link" href="${product.page}" aria-label="Ver detalle de ${product.name}">
             <div class="catalog-product-image-wrap">
@@ -87,6 +91,7 @@ const renderProductsPage = () => {
               <span>${product.label}</span>
               <h2>${product.name}</h2>
               <p>${product.description}</p>
+              ${availabilityLabel ? `<small class="product-availability">${availabilityLabel}</small>` : ''}
             </div>
 
             <div class="catalog-product-footer">
@@ -94,11 +99,12 @@ const renderProductsPage = () => {
               <span class="catalog-product-cta">Ver producto</span>
             </div>
           </a>
-          <button class="button button-primary catalog-cart-button" type="button" data-add-catalog-product="${escapeAttribute(product.slug)}">
-            Agregar a carrito
+          <button class="button ${canAddToCart ? 'button-primary' : 'button-secondary'} catalog-cart-button" type="button" data-add-catalog-product="${escapeAttribute(product.slug)}" ${canAddToCart ? '' : 'disabled'}>
+            ${canAddToCart ? 'Agregar a carrito' : 'Sin stock'}
           </button>
         </article>
-      `
+      `;
+      }
     ).join('')
     : `
       <article class="not-found-panel">

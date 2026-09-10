@@ -71,6 +71,9 @@
     price: product.price || 'Consultar precio',
     src: product.src || './assets/logo.png',
     alt: product.alt || product.name || 'Producto Top Pro',
+    stock: Math.max(0, Number.parseInt(product.stock, 10) || 0),
+    allowPreorder: product.allowPreorder !== false,
+    showInCarousel: product.showInCarousel !== false,
     isCustom: Boolean(product.isCustom)
   });
 

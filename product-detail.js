@@ -126,6 +126,8 @@ const renderProductDetail = () => {
   const initialFrontView = initialViews.find((view) => view.id === 'front') || initialViews[0] || null;
   const initialBackView = initialViews.find((view) => view.id === 'back') || initialViews[1] || initialFrontView;
   const hasImageRotation = Boolean(initialBackView);
+  const initialCanAddToCart = window.TopProCart?.canAddProduct?.(detailProduct) ?? true;
+  const initialAvailabilityLabel = window.TopProCart?.getAvailabilityLabel?.(detailProduct) || '';
   const variantSelectorMarkup = hasDetailVariants
     ? `
       <div class="detail-variant-panel" aria-label="Opciones del bolso organizador">
@@ -188,6 +190,7 @@ const renderProductDetail = () => {
             <div class="detail-price-card">
               <span>Precio</span>
               <strong>${detailProduct.price}</strong>
+              ${initialAvailabilityLabel ? `<small class="product-availability">${initialAvailabilityLabel}</small>` : ''}
             </div>
           </div>
 
@@ -236,8 +239,8 @@ const renderProductDetail = () => {
                 inputmode="numeric"
                 value="1"
               />
-              <button class="button button-primary detail-cart-button" id="product-cart-button" type="button">
-                Agregar a carrito
+              <button class="button ${initialCanAddToCart ? 'button-primary' : 'button-secondary'} detail-cart-button" id="product-cart-button" type="button" ${initialCanAddToCart ? '' : 'disabled'}>
+                ${initialCanAddToCart ? 'Agregar a carrito' : 'Sin stock'}
               </button>
               <a class="button button-secondary" href="carrito.html">Ver carrito</a>
               <a class="button button-secondary" href="productos.html">Volver a productos</a>
@@ -252,6 +255,7 @@ const renderProductDetail = () => {
   const cartButton = detailRoot.querySelector('#product-cart-button');
   const productTitle = detailRoot.querySelector('.detail-copy h1');
   const productPrice = detailRoot.querySelector('.detail-price-card strong');
+  const productAvailability = detailRoot.querySelector('.detail-price-card .product-availability');
   const frontProductImage = detailRoot.querySelector('#detail-product-image-front');
   const backProductImage = detailRoot.querySelector('#detail-product-image-back');
   const productImages = [frontProductImage, backProductImage].filter(Boolean);
@@ -325,6 +329,10 @@ const renderProductDetail = () => {
       productPrice.textContent = selectedVariant?.price || detailProduct.price;
     }
 
+    if (productAvailability) {
+      productAvailability.textContent = window.TopProCart?.getAvailabilityLabel?.(detailProduct) || '';
+    }
+
     document.title = `${selectedProductName} | Top Pro`;
 
     if (frontProductImage && frontView) {
@@ -371,9 +379,16 @@ const renderProductDetail = () => {
 
   const syncCartButton = () => {
     const cartOptions = getSelectedCartOptions();
+    const canAddToCart = window.TopProCart?.canAddProduct?.(detailProduct) ?? true;
+    cartButton.disabled = !canAddToCart;
+    cartButton.classList.toggle('button-primary', canAddToCart);
+    cartButton.classList.toggle('button-secondary', !canAddToCart);
+    cartButton.textContent = canAddToCart ? 'Agregar a carrito' : 'Sin stock';
     cartButton.setAttribute(
       'aria-label',
-      `Agregar ${detailProduct.name}${cartOptions.variantLabel ? ` ${cartOptions.variantLabel}` : ''} en cantidad ${cartOptions.quantity} al carrito`
+      canAddToCart
+        ? `Agregar ${detailProduct.name}${cartOptions.variantLabel ? ` ${cartOptions.variantLabel}` : ''} en cantidad ${cartOptions.quantity} al carrito`
+        : `${detailProduct.name} no tiene stock disponible`
     );
   };
 
@@ -388,6 +403,10 @@ const renderProductDetail = () => {
   quantityInput.addEventListener('input', syncCartButton);
   quantityInput.addEventListener('blur', syncCartButton);
   cartButton.addEventListener('click', () => {
+    if (!(window.TopProCart?.canAddProduct?.(detailProduct) ?? true)) {
+      return;
+    }
+
     window.TopProCart?.addProduct?.(detailProduct, getSelectedCartOptions());
     cartButton.textContent = 'Agregado';
     window.setTimeout(() => {

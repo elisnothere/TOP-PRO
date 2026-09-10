@@ -50,6 +50,9 @@ const getProductFormData = async (form, existingProduct = null) => {
     name: String(formData.get('name') || '').trim(),
     label: String(formData.get('label') || '').trim() || 'Producto Top Pro',
     price: String(formData.get('price') || '').trim() || 'Consultar precio',
+    stock: Math.max(0, Number.parseInt(formData.get('stock'), 10) || 0),
+    allowPreorder: formData.get('allowPreorder') === 'on',
+    showInCarousel: formData.get('showInCarousel') === 'on',
     description,
     detailDescription: details.length ? details : [description].filter(Boolean),
     src: imageData || existingProduct?.src || './assets/logo.png',
@@ -95,6 +98,11 @@ const renderProductRows = (products) => products.map((product) => `
       <strong>${escapeHtml(product.name)}</strong>
       <span>${escapeHtml(product.label || 'Producto Top Pro')}</span>
       <p>${escapeHtml(product.description)}</p>
+      <small>
+        Stock: ${Number.parseInt(product.stock, 10) || 0}
+        · ${product.allowPreorder ? 'Pre-reserva activa' : 'Sin pre-reserva'}
+        · ${product.showInCarousel ? 'En carrusel' : 'Fuera del carrusel'}
+      </small>
     </div>
     <strong>${escapeHtml(product.price)}</strong>
     <div class="admin-row-actions">
@@ -216,8 +224,20 @@ const renderAdminPage = async () => {
                 <input name="price" type="text" required value="${escapeHtml(editingProduct?.price || '')}" placeholder="9.85 USD" />
               </label>
               <label>
+                <span>Stock</span>
+                <input name="stock" type="number" min="0" step="1" value="${Number.parseInt(editingProduct?.stock, 10) || 0}" />
+              </label>
+              <label>
                 <span>Texto alternativo imagen</span>
                 <input name="alt" type="text" value="${escapeHtml(editingProduct?.alt || '')}" />
+              </label>
+              <label class="admin-toggle-field">
+                <input name="allowPreorder" type="checkbox" ${editingProduct?.allowPreorder !== false ? 'checked' : ''} />
+                <span>Permitir pre-reserva si no hay stock</span>
+              </label>
+              <label class="admin-toggle-field">
+                <input name="showInCarousel" type="checkbox" ${editingProduct?.showInCarousel !== false ? 'checked' : ''} />
+                <span>Mostrar en carrusel principal</span>
               </label>
               <label class="admin-form-wide">
                 <span>Descripcion corta</span>

@@ -356,6 +356,12 @@ main {
   font-weight: 700;
 }
 
+.button:disabled,
+.button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
 .button-primary {
   background: linear-gradient(135deg, #e41919, #a10303)!important;;
   color: #c59315;
@@ -1293,6 +1299,12 @@ main {
   text-transform: none;
 }
 
+.admin-product-form input[type='checkbox'] {
+  width: auto;
+  min-height: auto;
+  accent-color: var(--danger);
+}
+
 .admin-product-form textarea {
   resize: vertical;
 }
@@ -1300,6 +1312,17 @@ main {
 .admin-product-form input[type='file'] {
   min-height: auto;
   cursor: pointer;
+}
+
+.admin-toggle-field {
+  align-content: center;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  min-height: 52px;
+  padding: 12px 14px;
+  border: 1px solid rgba(30, 27, 45, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 248, 239, 0.46);
 }
 
 .admin-form-wide {
@@ -1355,13 +1378,15 @@ main {
 }
 
 .admin-product-row span,
-.admin-product-row p {
+.admin-product-row p,
+.admin-product-row small {
   color: rgba(30, 27, 45, 0.66);
 }
 
 .admin-product-row strong,
 .admin-product-row span,
-.admin-product-row p {
+.admin-product-row p,
+.admin-product-row small {
   overflow-wrap: anywhere;
 }
 
@@ -1783,6 +1808,15 @@ main {
 .catalog-product-copy p {
   color: var(--ink-soft);
   line-height: 1.7;
+}
+
+.product-availability {
+  color: var(--danger);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.45;
+  text-transform: uppercase;
 }
 
 .catalog-product-footer {
