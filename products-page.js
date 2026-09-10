@@ -176,6 +176,12 @@ const renderProductsPage = () => {
       const product = catalogProducts.find((item) => item.slug === button.dataset.addCatalogProduct);
 
       if (product) {
+        if (!(window.TopProCart?.canAddProduct?.(product) ?? true)) {
+          button.disabled = true;
+          button.textContent = 'Sin stock';
+          return;
+        }
+
         window.TopProCart?.addProduct?.(product, { quantity: 1 });
         button.textContent = 'Agregado';
         window.setTimeout(() => {

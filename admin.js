@@ -232,7 +232,7 @@ const renderAdminPage = async () => {
                 <input name="alt" type="text" value="${escapeHtml(editingProduct?.alt || '')}" />
               </label>
               <label class="admin-toggle-field">
-                <input name="allowPreorder" type="checkbox" ${editingProduct?.allowPreorder !== false ? 'checked' : ''} />
+                <input name="allowPreorder" type="checkbox" ${editingProduct?.allowPreorder === true ? 'checked' : ''} />
                 <span>Permitir pre-reserva si no hay stock</span>
               </label>
               <label class="admin-toggle-field">

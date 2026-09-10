@@ -86,23 +86,36 @@
     return total + (priceValue * sanitizeQuantity(item.quantity));
   }, 0);
 
+  const getLatestProduct = (product) => {
+    if (!product?.slug) {
+      return product;
+    }
+
+    return window.TopProProducts?.getProduct?.(product.slug)
+      || (window.TOP_PRO_DATA?.products || []).find((item) => item.slug === product.slug)
+      || product;
+  };
+
   const canAddProduct = (product) => {
-    if (!product) {
+    const latestProduct = getLatestProduct(product);
+
+    if (!latestProduct) {
       return false;
     }
 
-    const stock = Number.parseInt(product.stock, 10) || 0;
-    return stock > 0 || product.allowPreorder === true;
+    const stock = Number.parseInt(latestProduct.stock, 10) || 0;
+    return stock > 0 || latestProduct.allowPreorder === true;
   };
 
   const getAvailabilityLabel = (product) => {
-    const stock = Number.parseInt(product?.stock, 10) || 0;
+    const latestProduct = getLatestProduct(product);
+    const stock = Number.parseInt(latestProduct?.stock, 10) || 0;
 
     if (stock > 0) {
       return `Stock disponible: ${stock}`;
     }
 
-    if (product?.allowPreorder === true) {
+    if (latestProduct?.allowPreorder === true) {
       return 'Sin stock inmediato · Pre-reserva disponible';
     }
 
@@ -110,15 +123,17 @@
   };
 
   const addProduct = (product, options = {}) => {
-    if (!product || !product.slug) {
+    const latestProduct = getLatestProduct(product);
+
+    if (!latestProduct || !latestProduct.slug) {
       return getCart();
     }
 
-    if (!canAddProduct(product)) {
+    if (!canAddProduct(latestProduct)) {
       return getCart();
     }
 
-    const nextItem = normalizeCartItem(product, options);
+    const nextItem = normalizeCartItem(latestProduct, options);
     const items = getCart();
     const existingIndex = items.findIndex((item) => item.key === nextItem.key);
 
@@ -190,6 +205,7 @@
     getCount,
     getTotal,
     formatUsdTotal,
+    getLatestProduct,
     canAddProduct,
     getAvailabilityLabel,
     addProduct,

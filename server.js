@@ -108,7 +108,7 @@ const prepareProduct = (product) => ({
   views: Array.isArray(product.views) ? product.views : [],
   carouselViews: Array.isArray(product.carouselViews) ? product.carouselViews : [],
   stock: Number.isFinite(Number(product.stock)) ? Math.max(0, Number.parseInt(product.stock, 10)) : 0,
-  allowPreorder: product.allowPreorder !== false,
+  allowPreorder: product.allowPreorder === true,
   showInCarousel: product.showInCarousel !== false
 });
 
@@ -144,7 +144,7 @@ db.exec(`
     views TEXT NOT NULL DEFAULT '[]',
     carousel_views TEXT NOT NULL DEFAULT '[]',
     stock INTEGER NOT NULL DEFAULT 0,
-    allow_preorder INTEGER NOT NULL DEFAULT 1,
+    allow_preorder INTEGER NOT NULL DEFAULT 0,
     show_in_carousel INTEGER NOT NULL DEFAULT 1,
     is_seed INTEGER NOT NULL DEFAULT 0,
     is_deleted INTEGER NOT NULL DEFAULT 0,
@@ -162,7 +162,7 @@ const ensureProductColumn = (name, definition) => {
 };
 
 ensureProductColumn('stock', 'INTEGER NOT NULL DEFAULT 0');
-ensureProductColumn('allow_preorder', 'INTEGER NOT NULL DEFAULT 1');
+ensureProductColumn('allow_preorder', 'INTEGER NOT NULL DEFAULT 0');
 ensureProductColumn('show_in_carousel', 'INTEGER NOT NULL DEFAULT 1');
 
 const userCount = db.prepare('SELECT COUNT(*) AS total FROM users').get().total;
