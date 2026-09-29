@@ -101,6 +101,7 @@ export default function HomeClient({ products }) {
     let dragStartX = 0;
     let dragStartScrollLeft = 0;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const compactCarousel = window.matchMedia('(max-width: 760px)');
 
     const normalizeScrollPosition = () => {
       if (!loopWidth) return;
@@ -119,6 +120,13 @@ export default function HomeClient({ products }) {
     };
 
     const syncCarouselWidth = () => {
+      if (compactCarousel.matches) {
+        loopWidth = 0;
+        shell.style.setProperty('--carousel-loop-width', '0px');
+        shell.scrollLeft = 0;
+        return;
+      }
+
       const shellStyles = window.getComputedStyle(shell);
       const gap = Number.parseFloat(shellStyles.getPropertyValue('--carousel-gap')) || 0;
       loopWidth = group.getBoundingClientRect().width + gap;
@@ -127,7 +135,7 @@ export default function HomeClient({ products }) {
     };
 
     const tick = () => {
-      if (!autoScrollPaused && !reducedMotion.matches && loopWidth > 0) {
+      if (!compactCarousel.matches && !autoScrollPaused && !reducedMotion.matches && loopWidth > 0) {
         shell.scrollLeft += 0.65;
         normalizeScrollPosition();
       }
@@ -143,6 +151,7 @@ export default function HomeClient({ products }) {
     };
 
     const onPointerDown = (event) => {
+      if (compactCarousel.matches) return;
       if (event.button !== undefined && event.button !== 0) return;
       isDragging = true;
       dragStartX = event.clientX;
@@ -177,6 +186,7 @@ export default function HomeClient({ products }) {
     resizeObserver?.observe(shell);
     resizeObserver?.observe(group);
     window.addEventListener('resize', syncCarouselWidth);
+    compactCarousel.addEventListener?.('change', syncCarouselWidth);
     shell.addEventListener('mouseleave', onMouseLeave);
     shell.addEventListener('mouseenter', onMouseEnter);
     shell.addEventListener('focusin', onFocusIn);
@@ -191,6 +201,7 @@ export default function HomeClient({ products }) {
       window.clearTimeout(resumeTimerId);
       resizeObserver?.disconnect();
       window.removeEventListener('resize', syncCarouselWidth);
+      compactCarousel.removeEventListener?.('change', syncCarouselWidth);
       shell.removeEventListener('mouseleave', onMouseLeave);
       shell.removeEventListener('mouseenter', onMouseEnter);
       shell.removeEventListener('focusin', onFocusIn);

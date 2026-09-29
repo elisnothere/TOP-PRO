@@ -137,7 +137,7 @@ const renderProductsPage = () => {
 
         <nav class="nav detail-nav" id="products-nav" aria-label="Navegacion secundaria">
           <a href="index.html#featured">Inicio</a>
-          <a href="donde-encontrarnos.html">Contacto</a>
+          <a href="donde-encontrarnos.html">Contactanos</a>
         </nav>
       </header>
 

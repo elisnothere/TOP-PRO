@@ -419,14 +419,10 @@
       nav.dataset.authState = authState;
       actions.querySelectorAll('[data-auth-nav]').forEach((item) => item.remove());
 
-      if (currentUser?.role === 'admin') {
-        actions.insertAdjacentHTML('beforeend', '<a data-auth-nav href="admin.html">Admin</a>');
-      }
-
       if (currentUser) {
         actions.insertAdjacentHTML(
           'beforeend',
-          `<a data-auth-nav class="nav-icon-button" href="auth.html" aria-label="${currentUser.name || 'Mi cuenta'}"><img class="nav-icon nav-login-icon" src="assets/login-cropped.png" alt="" /></a><button data-auth-nav class="nav-logout-button" type="button">Salir</button>`
+          `<a data-auth-nav class="nav-icon-button" href="auth.html" aria-label="${currentUser.name || 'Mi cuenta'}"><img class="nav-icon nav-login-icon" src="assets/login-cropped.png" alt="" /></a>${currentUser.role === 'admin' ? '<a data-auth-nav href="admin.html">Admin</a>' : ''}<button data-auth-nav class="nav-logout-button" type="button">Salir</button>`
         );
         nav.querySelectorAll('.nav-logout-button').forEach((button) => {
           button.addEventListener('click', () => {
@@ -458,15 +454,19 @@
   ensureAdminAccount();
 
   const scheduleNavigationEnhancement = () => window.requestAnimationFrame(enhanceNavigation);
+  const scheduleFullNavigationRefresh = () => {
+    scheduleNavigationEnhancement();
+    window.requestAnimationFrame(() => window.TopProCart?.refreshNavigation?.());
+  };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', scheduleNavigationEnhancement);
+    document.addEventListener('DOMContentLoaded', scheduleFullNavigationRefresh);
   } else {
-    scheduleNavigationEnhancement();
+    scheduleFullNavigationRefresh();
   }
 
-  window.addEventListener('toppro-auth-change', scheduleNavigationEnhancement);
+  window.addEventListener('toppro-auth-change', scheduleFullNavigationRefresh);
 
-  const observer = new MutationObserver(scheduleNavigationEnhancement);
+  const observer = new MutationObserver(scheduleFullNavigationRefresh);
   observer.observe(document.documentElement, { childList: true, subtree: true });
 })();

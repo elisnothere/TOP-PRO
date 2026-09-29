@@ -3835,13 +3835,33 @@ body.menu-open {
 
   .carousel-card {
     min-height: 0;
-    width: min(82vw, 320px);
-    flex-basis: min(82vw, 320px);
+    width: min(100%, 320px);
+    flex-basis: min(100%, 320px);
     padding: 18px 18px 22px;
+    scroll-snap-align: center;
   }
 
   .carousel-card-link {
-    width: min(82vw, 320px);
+    width: 100%;
+  }
+
+  .product-carousel-shell {
+    --carousel-gap: 14px;
+    width: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 0;
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .product-carousel-track,
+  .product-carousel-group {
+    width: 100%;
+  }
+
+  .product-carousel-group {
+    grid-auto-columns: minmax(0, 100%);
   }
 
   .catalog-product-card {

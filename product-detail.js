@@ -170,7 +170,7 @@ const renderProductDetail = () => {
 
         <nav class="nav detail-nav" id="detail-nav" aria-label="Navegacion secundaria">
           <a href="productos.html">Productos</a>
-          <a href="donde-encontrarnos.html">Contacto</a>
+          <a href="donde-encontrarnos.html">Contactanos</a>
         </nav>
       </header>
 

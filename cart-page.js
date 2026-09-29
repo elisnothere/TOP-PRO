@@ -92,7 +92,7 @@ const renderCartPage = () => {
         <nav class="nav detail-nav" id="cart-nav" aria-label="Navegacion secundaria">
           <a href="index.html#home">Inicio</a>
           <a href="productos.html">Productos</a>
-          <a href="donde-encontrarnos.html">Contacto</a>
+          <a href="donde-encontrarnos.html">Contactanos</a>
         </nav>
       </header>
 

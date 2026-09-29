@@ -249,6 +249,11 @@
         actions.appendChild(cartLink);
       }
 
+      const firstAuthItem = actions.querySelector('[data-auth-nav]');
+      if (firstAuthItem && cartLink.nextElementSibling !== firstAuthItem) {
+        actions.insertBefore(cartLink, firstAuthItem);
+      }
+
       let badge = cartLink.querySelector('.nav-cart-count');
       if (count > 0 && !badge) {
         badge = document.createElement('span');

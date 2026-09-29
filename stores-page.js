@@ -104,7 +104,7 @@ if (storesRoot) {
 
         <nav class="nav detail-nav" id="stores-nav" aria-label="Navegacion secundaria">
           <a href="productos.html">Productos</a>
-          <a href="index.html#contact">Contacto</a>
+          <a href="index.html#contact">Contactanos</a>
         </nav>
       </header>
 

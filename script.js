@@ -426,6 +426,7 @@ function App() {
     let dragStartX = 0;
     let dragStartScrollLeft = 0;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const compactCarousel = window.matchMedia('(max-width: 760px)');
 
     const normalizeScrollPosition = () => {
       if (!loopWidth) {
@@ -452,6 +453,13 @@ function App() {
     };
 
     const syncCarouselWidth = () => {
+      if (compactCarousel.matches) {
+        loopWidth = 0;
+        shell.style.setProperty('--carousel-loop-width', '0px');
+        shell.scrollLeft = 0;
+        return;
+      }
+
       const shellStyles = window.getComputedStyle(shell);
       const gap = Number.parseFloat(shellStyles.getPropertyValue('--carousel-gap')) || 0;
       loopWidth = group.getBoundingClientRect().width + gap;
@@ -461,7 +469,7 @@ function App() {
     };
 
     const tick = () => {
-      if (!autoScrollPaused && !reducedMotion.matches && loopWidth > 0) {
+      if (!compactCarousel.matches && !autoScrollPaused && !reducedMotion.matches && loopWidth > 0) {
         shell.scrollLeft += 0.65;
         normalizeScrollPosition();
       }
@@ -488,6 +496,10 @@ function App() {
     };
 
     const onPointerDown = (event) => {
+      if (compactCarousel.matches) {
+        return;
+      }
+
       if (event.button !== undefined && event.button !== 0) {
         return;
       }
@@ -536,6 +548,7 @@ function App() {
     }
 
     window.addEventListener('resize', syncCarouselWidth);
+    compactCarousel.addEventListener?.('change', syncCarouselWidth);
     shell.addEventListener('mouseleave', onMouseLeave);
     shell.addEventListener('mouseenter', onMouseEnter);
     shell.addEventListener('focusin', onFocusIn);
@@ -553,6 +566,7 @@ function App() {
       window.clearTimeout(resumeTimerId);
       resizeObserver?.disconnect();
       window.removeEventListener('resize', syncCarouselWidth);
+      compactCarousel.removeEventListener?.('change', syncCarouselWidth);
       shell.removeEventListener('mouseleave', onMouseLeave);
       shell.removeEventListener('mouseenter', onMouseEnter);
       shell.removeEventListener('focusin', onFocusIn);
