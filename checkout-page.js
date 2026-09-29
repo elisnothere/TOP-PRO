@@ -114,6 +114,7 @@ const renderCheckoutPage = () => {
                 <textarea name="notes" rows="4" placeholder="Talles, horarios, direccion o aclaraciones."></textarea>
               </label>
               <button class="button button-primary checkout-form-wide" type="submit">Confirmar por WhatsApp</button>
+              <button class="button button-secondary checkout-form-wide" type="button" disabled>Otros pagos no disponibles</button>
             </form>
 
             <aside class="cart-summary checkout-summary">

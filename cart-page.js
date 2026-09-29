@@ -64,7 +64,7 @@ const renderCartPage = () => {
       <article class="not-found-panel cart-empty-panel">
         <p class="eyebrow">Carrito</p>
         <h1>Tu carrito esta vacio</h1>
-        <p>Agrega productos desde el catalogo y despues podes pedir todo junto por WhatsApp o avanzar al checkout.</p>
+        <p>Agrega productos desde el catalogo y despues podes avanzar al checkout.</p>
         <a class="button button-primary" href="productos.html">Ver productos</a>
       </article>
     `;
@@ -103,7 +103,7 @@ const renderCartPage = () => {
           <div class="cart-heading">
             <p class="eyebrow">Pedido</p>
             <h1>Carrito</h1>
-            <p class="lede">Revisa tus productos y cuando este todo listo, envia el pedido completo por WhatsApp o continua al checkout.</p>
+            <p class="lede">Revisa tus productos y cuando este todo listo, continua al checkout para finalizar el pedido.</p>
           </div>
 
           <div class="cart-items">
@@ -119,10 +119,7 @@ const renderCartPage = () => {
                 </div>
               ` : ''}
               <div class="cart-summary-actions">
-                <a class="button button-primary" id="cart-whatsapp-link" href="${window.TopProCart.buildWhatsAppHref()}" target="_blank" rel="noopener noreferrer">
-                  Pedir por WhatsApp
-                </a>
-                <a class="button button-secondary" href="checkout.html">Proceder a checkout</a>
+                <a class="button button-primary" href="checkout.html">Proceder a checkout</a>
                 <button class="button button-secondary" type="button" id="clear-cart-button">Vaciar carrito</button>
               </div>
             </aside>

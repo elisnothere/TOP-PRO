@@ -3710,6 +3710,10 @@ body.menu-open {
     width: min(72vw, 300px);
   }
 
+  .nav-search-panel input {
+    font-size: 16px;
+  }
+
   .nav-search-results a {
     width: 100%;
     padding: 10px 12px;

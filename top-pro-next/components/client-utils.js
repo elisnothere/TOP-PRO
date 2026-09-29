@@ -45,13 +45,15 @@ export async function apiRequest(path, options = {}) {
 
 export function canAddProduct(product) {
   const stock = Number.parseInt(product?.stock, 10) || 0;
-  return stock > 0 || product?.allowPreorder === true;
+  const isComingSoon = /pronto disponible/i.test(String(product?.price || ''));
+  return stock > 0 || product?.allowPreorder === true || (!isComingSoon && product?.isCustom !== true);
 }
 
 export function availabilityLabel(product) {
   const stock = Number.parseInt(product?.stock, 10) || 0;
   if (stock > 0) return `Stock disponible: ${stock}`;
   if (product?.allowPreorder) return 'Sin stock inmediato · Pre-reserva disponible';
+  if (!/pronto disponible/i.test(String(product?.price || '')) && product?.isCustom !== true) return 'Disponible';
   return 'Sin stock';
 }
 

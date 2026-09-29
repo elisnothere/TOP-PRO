@@ -148,7 +148,8 @@
     }
 
     const stock = Number.parseInt(latestProduct.stock, 10) || 0;
-    return stock > 0 || latestProduct.allowPreorder === true;
+    const isComingSoon = /pronto disponible/i.test(String(latestProduct.price || ''));
+    return stock > 0 || latestProduct.allowPreorder === true || (!isComingSoon && latestProduct.isCustom !== true);
   };
 
   const getAvailabilityLabel = (product) => {
@@ -161,6 +162,10 @@
 
     if (latestProduct?.allowPreorder === true) {
       return 'Sin stock inmediato · Pre-reserva disponible';
+    }
+
+    if (!/pronto disponible/i.test(String(latestProduct?.price || '')) && latestProduct?.isCustom !== true) {
+      return 'Disponible';
     }
 
     return 'Sin stock';
