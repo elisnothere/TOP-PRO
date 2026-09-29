@@ -199,7 +199,7 @@ h3 {
 
 .nav {
   flex: 1;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   gap: 22px;
 }
@@ -226,8 +226,12 @@ h3 {
   gap: 12px;
 }
 
-.nav > .nav-primary-link:first-child, .nav > .nav-search {
-  margin-left: auto;
+.header-actions {
+  flex: none;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  display: flex;
 }
 
 .nav-icon-button {
@@ -3328,9 +3332,9 @@ body.menu-open {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     border-radius: 24px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
     padding: 14px 16px;
     position: sticky;
     top: 10px;
@@ -3338,11 +3342,13 @@ body.menu-open {
   }
 
   .topbar.is-open {
-    z-index: 80;
+    z-index: 1000;
   }
 
   .brand {
-    max-width: calc(100% - 64px);
+    flex: auto;
+    min-width: 0;
+    max-width: none;
   }
 
   .brand-mark {
@@ -3410,11 +3416,12 @@ body.menu-open {
     justify-content: flex-end;
   }
 
-  .nav > .nav-primary-link:first-child, .nav > .nav-search {
-    margin-left: 0;
+  .header-actions {
+    flex: none;
+    gap: 8px;
   }
 
-  .nav .nav-icon-button, .detail-nav .nav-icon-button {
+  .nav .nav-icon-button, .detail-nav .nav-icon-button, .header-actions .nav-icon-button {
     background: #ffffff94;
     border-radius: 50%;
     width: 46px;
@@ -3602,7 +3609,7 @@ body.menu-open {
   }
 
   .topbar {
-    gap: 12px;
+    gap: 8px;
     padding: 12px 14px;
   }
 
@@ -3611,16 +3618,47 @@ body.menu-open {
   }
 
   .brand {
+    flex: auto;
     gap: 10px;
-    max-width: calc(100% - 58px);
+    min-width: 0;
+    max-width: none;
+  }
+
+  .brand-mark {
+    width: 42px;
+    height: 42px;
   }
 
   .brand-copy strong {
+    white-space: nowrap;
     font-size: 1rem;
   }
 
   .brand-copy small {
-    font-size: .7rem;
+    display: none;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+
+  .header-actions .nav-icon-button, .nav-toggle {
+    width: 40px;
+    height: 40px;
+  }
+
+  .header-actions .nav-icon-button {
+    padding: 8px;
+  }
+
+  .nav-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .nav-login-icon {
+    width: 24px;
+    height: 24px;
   }
 
   .price-card, .detail-price-card {

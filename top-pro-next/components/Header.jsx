@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { catalogProducts } from '../lib/catalog';
 import { getCart, getSession, setSession } from './client-utils';
 
 export default function Header({ detail = false }) {
   const router = useRouter();
+  const searchRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -36,6 +37,32 @@ export default function Header({ detail = false }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!searchOpen) {
+      return undefined;
+    }
+
+    const closeSearchOutside = (event) => {
+      if (!searchRef.current?.contains(event.target)) {
+        setSearchOpen(false);
+      }
+    };
+
+    const closeSearchOnEscape = (event) => {
+      if (event.key === 'Escape') {
+        setSearchOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', closeSearchOutside);
+    document.addEventListener('keydown', closeSearchOnEscape);
+
+    return () => {
+      document.removeEventListener('pointerdown', closeSearchOutside);
+      document.removeEventListener('keydown', closeSearchOnEscape);
+    };
+  }, [searchOpen]);
+
   const closeMenus = () => {
     setOpen(false);
     setSearchOpen(false);
@@ -57,18 +84,17 @@ export default function Header({ detail = false }) {
   return (
     <>
       <header className={`topbar ${detail ? 'detail-topbar' : ''} ${open ? 'is-open' : ''}`}>
-        <Link className="brand" href="/" aria-label="Top Pro home">
+        <Link className="brand" href="/" aria-label="Top Pro home" onClick={closeMenus}>
           <span className="brand-mark has-logo"><img className="brand-logo" src="/assets/logo.png" alt="Top Pro logo" /></span>
           <span className="brand-copy"><strong>Top Pro</strong><small>Rally-ready goods</small></span>
         </Link>
-        <button className="nav-toggle" type="button" aria-expanded={open} onClick={() => setOpen(!open)}>
-          <span></span><span></span><span></span><span className="sr-only">Abrir navegacion</span>
-        </button>
         <nav className={`nav ${detail ? 'detail-nav' : ''} ${open ? 'is-open' : ''}`}>
           <Link className="nav-primary-link" href="/productos" onClick={closeMenus}>Productos</Link>
           <Link className="nav-primary-link" href="/donde-encontrarnos" onClick={closeMenus}>Contactanos</Link>
-          <div className={`nav-search ${searchOpen ? 'is-open' : ''}`}>
-            <button className="nav-icon-button" type="button" aria-label="Buscar productos" aria-expanded={searchOpen} onClick={() => setSearchOpen(!searchOpen)}>
+        </nav>
+        <div className="header-actions">
+          <div ref={searchRef} className={`nav-search ${searchOpen ? 'is-open' : ''}`}>
+            <button className="nav-icon-button" type="button" aria-label="Buscar productos" aria-expanded={searchOpen} onClick={() => { setOpen(false); setSearchOpen((current) => !current); }}>
               <img className="nav-icon" src="/assets/search.png" alt="" />
             </button>
             <form className="nav-search-panel" hidden={!searchOpen} onSubmit={submitSearch}>
@@ -93,7 +119,10 @@ export default function Header({ detail = false }) {
           </Link>
           {user?.role === 'admin' ? <Link href="/admin">Admin</Link> : null}
           {user ? <button className="nav-logout-button" type="button" onClick={logout}>Salir</button> : null}
-        </nav>
+        </div>
+        <button className="nav-toggle" type="button" aria-expanded={open} onClick={() => { setSearchOpen(false); setOpen(!open); }}>
+          <span></span><span></span><span></span><span className="sr-only">Abrir navegacion</span>
+        </button>
       </header>
       <button className={`mobile-menu-backdrop ${open ? 'is-visible' : ''}`} type="button" aria-label="Cerrar navegacion" onClick={closeMenus}></button>
     </>
