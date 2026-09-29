@@ -1,0 +1,16 @@
+{
+  "/admin/page": "app/admin/page.js",
+  "/api/auth/login/route": "app/api/auth/login/route.js",
+  "/api/products/[slug]/route": "app/api/products/[slug]/route.js",
+  "/api/products/route": "app/api/products/route.js",
+  "/auth/page": "app/auth/page.js",
+  "/bolso-organizador/page": "app/bolso-organizador/page.js",
+  "/carrito/page": "app/carrito/page.js",
+  "/checkout/page": "app/checkout/page.js",
+  "/cuaderno-de-rally/page": "app/cuaderno-de-rally/page.js",
+  "/donde-encontrarnos/page": "app/donde-encontrarnos/page.js",
+  "/page": "app/page.js",
+  "/producto/[slug]/page": "app/producto/[slug]/page.js",
+  "/productos/page": "app/productos/page.js",
+  "/remera-top-pro/page": "app/remera-top-pro/page.js"
+}

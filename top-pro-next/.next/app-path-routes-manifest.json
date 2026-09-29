@@ -1,0 +1,20 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/admin/page": "/admin",
+  "/api/auth/login/route": "/api/auth/login",
+  "/api/auth/register/route": "/api/auth/register",
+  "/api/products/[slug]/route": "/api/products/[slug]",
+  "/api/products/route": "/api/products",
+  "/api/users/route": "/api/users",
+  "/auth/page": "/auth",
+  "/bolso-organizador/page": "/bolso-organizador",
+  "/carrito/page": "/carrito",
+  "/checkout/page": "/checkout",
+  "/cuaderno-de-rally/page": "/cuaderno-de-rally",
+  "/donde-encontrarnos/page": "/donde-encontrarnos",
+  "/page": "/",
+  "/producto/[slug]/page": "/producto/[slug]",
+  "/productos/page": "/productos",
+  "/remera-top-pro/page": "/remera-top-pro"
+}

@@ -21,6 +21,7 @@ const sendJson = (res, status, payload) => {
   const body = JSON.stringify(payload);
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'no-store',
     'Content-Length': Buffer.byteLength(body)
   });
   res.end(body);
@@ -522,9 +523,17 @@ const serveStatic = (req, res, url) => {
       return;
     }
 
-    res.writeHead(200, {
-      'Content-Type': mimeTypes[path.extname(filePath).toLowerCase()] || 'application/octet-stream'
-    });
+    const extension = path.extname(filePath).toLowerCase();
+    const noStoreExtensions = new Set(['.html', '.js', '.css']);
+    const headers = {
+      'Content-Type': mimeTypes[extension] || 'application/octet-stream'
+    };
+
+    if (noStoreExtensions.has(extension)) {
+      headers['Cache-Control'] = 'no-store';
+    }
+
+    res.writeHead(200, headers);
     res.end(content);
   });
 };

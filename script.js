@@ -422,6 +422,9 @@ function App() {
     let resumeTimerId = 0;
     let loopWidth = 0;
     let autoScrollPaused = false;
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartScrollLeft = 0;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     const normalizeScrollPosition = () => {
@@ -484,6 +487,40 @@ function App() {
       }
     };
 
+    const onPointerDown = (event) => {
+      if (event.button !== undefined && event.button !== 0) {
+        return;
+      }
+
+      isDragging = true;
+      dragStartX = event.clientX;
+      dragStartScrollLeft = shell.scrollLeft;
+      setAutoScrollPaused(true);
+      shell.classList.add('is-dragging');
+      shell.setPointerCapture?.(event.pointerId);
+    };
+
+    const onPointerMove = (event) => {
+      if (!isDragging) {
+        return;
+      }
+
+      event.preventDefault();
+      shell.scrollLeft = dragStartScrollLeft - (event.clientX - dragStartX);
+      normalizeScrollPosition();
+    };
+
+    const endDrag = (event) => {
+      if (!isDragging) {
+        return;
+      }
+
+      isDragging = false;
+      shell.classList.remove('is-dragging');
+      shell.releasePointerCapture?.(event.pointerId);
+      scheduleAutoScrollResume();
+    };
+
     syncCarouselWidth();
     frameId = window.requestAnimationFrame(tick);
 
@@ -503,6 +540,10 @@ function App() {
     shell.addEventListener('mouseenter', onMouseEnter);
     shell.addEventListener('focusin', onFocusIn);
     shell.addEventListener('focusout', onFocusOut);
+    shell.addEventListener('pointerdown', onPointerDown);
+    shell.addEventListener('pointermove', onPointerMove);
+    shell.addEventListener('pointerup', endDrag);
+    shell.addEventListener('pointercancel', endDrag);
 
     return () => {
       if (frameId) {
@@ -516,6 +557,10 @@ function App() {
       shell.removeEventListener('mouseenter', onMouseEnter);
       shell.removeEventListener('focusin', onFocusIn);
       shell.removeEventListener('focusout', onFocusOut);
+      shell.removeEventListener('pointerdown', onPointerDown);
+      shell.removeEventListener('pointermove', onPointerMove);
+      shell.removeEventListener('pointerup', endDrag);
+      shell.removeEventListener('pointercancel', endDrag);
     };
   }, []);
 

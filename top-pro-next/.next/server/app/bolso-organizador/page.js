@@ -1,0 +1,13 @@
+var R=require("../../chunks/ssr/[turbopack]_runtime.js")("server/app/bolso-organizador/page.js")
+R.c("server/chunks/ssr/[root-of-the-server]__10cvjyc._.js")
+R.c("server/chunks/ssr/node_modules_next_dist_1n3w9lb._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__1yvv6ks._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__0j26pto._.js")
+R.c("server/chunks/ssr/app_layout_07uf2ib.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_0wpq8j3._.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_forbidden_0symwr9.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_unauthorized_0l_sp0x.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_global-error_0q-w892.js")
+R.c("server/chunks/ssr/_next-internal_server_app_bolso-organizador_page_actions_0qmu2z2.js")
+R.m(9798)
+module.exports=R.m(9798).exports

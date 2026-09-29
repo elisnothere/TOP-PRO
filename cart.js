@@ -11,9 +11,11 @@
     }
   };
 
-  const saveCart = (items) => {
+  const saveCart = (items, { notify = true } = {}) => {
     localStorage.setItem(CART_KEY, JSON.stringify(items));
-    window.dispatchEvent(new CustomEvent('toppro-cart-change', { detail: items }));
+    if (notify) {
+      window.dispatchEvent(new CustomEvent('toppro-cart-change', { detail: items }));
+    }
     updateCartNavigation();
     return items;
   };
@@ -62,7 +64,49 @@
     };
   };
 
-  const getCart = () => readCart();
+  const findVariantById = (product, variantId = '') => {
+    const variants = Array.isArray(product?.variants) ? product.variants : [];
+    return variants.find((variant) => variant.id === variantId) || null;
+  };
+
+  const areCartItemsEqual = (currentItems, nextItems) => (
+    JSON.stringify(currentItems) === JSON.stringify(nextItems)
+  );
+
+  const reconcileCart = ({ notify = false } = {}) => {
+    const currentItems = readCart();
+    const nextItems = currentItems
+      .map((item) => {
+        const latestProduct = getLatestProduct(item);
+
+        if (!latestProduct || !canAddProduct(latestProduct)) {
+          return null;
+        }
+
+        const variant = item.variantId ? findVariantById(latestProduct, item.variantId) : null;
+
+        if (item.variantId && !variant) {
+          return null;
+        }
+
+        return normalizeCartItem(latestProduct, {
+          quantity: item.quantity,
+          variant,
+          variantId: item.variantId,
+          variantLabel: variant?.label || item.variantLabel,
+          price: variant?.price || latestProduct.price || item.price
+        });
+      })
+      .filter(Boolean);
+
+    if (!areCartItemsEqual(currentItems, nextItems)) {
+      saveCart(nextItems, { notify });
+    }
+
+    return nextItems;
+  };
+
+  const getCart = () => reconcileCart({ notify: false });
   const getCount = () => getCart().reduce((total, item) => total + sanitizeQuantity(item.quantity), 0);
 
   const getUsdPriceValue = (price) => {
@@ -208,6 +252,7 @@
     getLatestProduct,
     canAddProduct,
     getAvailabilityLabel,
+    reconcileCart,
     addProduct,
     updateQuantity,
     removeItem,
@@ -225,7 +270,10 @@
   }
 
   window.addEventListener('toppro-auth-change', scheduleNavigationUpdate);
-  window.addEventListener('toppro-products-change', scheduleNavigationUpdate);
+  window.addEventListener('toppro-products-change', () => {
+    reconcileCart({ notify: true });
+    scheduleNavigationUpdate();
+  });
 
   const observer = new MutationObserver(scheduleNavigationUpdate);
   observer.observe(document.documentElement, { childList: true, subtree: true });

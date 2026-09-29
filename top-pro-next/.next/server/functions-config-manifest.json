@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "functions": {
+    "/api/auth/login": {},
+    "/api/auth/register": {},
+    "/api/products": {},
+    "/api/products/[slug]": {},
+    "/api/users": {}
+  }
+}
