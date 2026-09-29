@@ -7,6 +7,112 @@
   const API_BASE = `${window.location.origin}/api`;
   let cachedUsers = [];
 
+  const getProducts = () => window.TopProProducts?.getProducts?.() || window.TOP_PRO_DATA?.products || [];
+
+  const normalizeNavHref = (href = '') => href.replace(/^\.?\//, '');
+
+  const ensureNavLayout = (nav) => {
+    let center = nav.querySelector('.nav-center');
+    let actions = nav.querySelector('.nav-actions');
+
+    if (!center) {
+      center = document.createElement('div');
+      center.className = 'nav-center';
+      nav.prepend(center);
+    }
+
+    if (!actions) {
+      actions = document.createElement('div');
+      actions.className = 'nav-actions';
+      nav.appendChild(actions);
+    }
+
+    [...nav.children].forEach((child) => {
+      if (child === center || child === actions) {
+        return;
+      }
+
+      if (child.matches('[data-auth-nav], [data-cart-nav], [data-search-nav], .nav-logout-button')) {
+        actions.appendChild(child);
+      } else {
+        center.appendChild(child);
+      }
+    });
+
+    center.querySelectorAll('a').forEach((link) => {
+      if (normalizeNavHref(link.getAttribute('href')) === 'donde-encontrarnos.html' || link.getAttribute('href') === '#contact' || link.getAttribute('href') === 'index.html#contact') {
+        link.textContent = 'Contactanos';
+      }
+    });
+
+    return { center, actions };
+  };
+
+  const ensureSearchNavigation = (nav) => {
+    const { actions } = ensureNavLayout(nav);
+
+    if (actions.querySelector('[data-search-nav]')) {
+      return;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'nav-search';
+    wrapper.setAttribute('data-search-nav', 'true');
+    wrapper.innerHTML = `
+      <button class="nav-icon-button" type="button" aria-label="Buscar productos" aria-expanded="false">
+        <img class="nav-icon" src="assets/search.png" alt="" />
+      </button>
+      <form class="nav-search-panel">
+        <label class="sr-only" for="site-search-${Math.random().toString(36).slice(2)}">Buscar productos</label>
+        <input placeholder="Buscar productos" autocomplete="off" />
+        <div class="nav-search-results"></div>
+      </form>
+    `;
+
+    const button = wrapper.querySelector('button');
+    const form = wrapper.querySelector('form');
+    const input = wrapper.querySelector('input');
+    const results = wrapper.querySelector('.nav-search-results');
+    const label = wrapper.querySelector('label');
+    input.id = label.getAttribute('for');
+
+    const renderResults = () => {
+      const query = input.value.trim().toLowerCase();
+      const products = getProducts();
+      const matches = query
+        ? products.filter((product) => [product.name, product.label, product.description, product.price, product.slug].join(' ').toLowerCase().includes(query))
+        : products;
+
+      results.innerHTML = matches.length
+        ? matches.map((product) => `<a href="${product.page || `producto.html?slug=${encodeURIComponent(product.slug || '')}`}"><span>${product.name}</span><small>${product.price || ''}</small></a>`).join('')
+        : '<p>No encontramos productos.</p>';
+    };
+
+    button.addEventListener('click', () => {
+      const open = !wrapper.classList.contains('is-open');
+      wrapper.classList.toggle('is-open', open);
+      form.hidden = !open;
+      button.setAttribute('aria-expanded', String(open));
+      renderResults();
+      if (open) {
+        input.focus();
+      }
+    });
+
+    input.addEventListener('input', renderResults);
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const firstResult = results.querySelector('a');
+      if (firstResult) {
+        window.location.href = firstResult.href;
+      }
+    });
+
+    renderResults();
+    form.hidden = true;
+    actions.prepend(wrapper);
+  };
+
   const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
 
   const hashPassword = (password) => {
@@ -241,6 +347,7 @@
     const navs = document.querySelectorAll('.nav, .detail-nav');
 
     navs.forEach((nav) => {
+      ensureSearchNavigation(nav);
       const authState = currentUser
         ? `${currentUser.role}:${currentUser.email}:${currentUser.name}`
         : 'guest';
@@ -253,13 +360,13 @@
       nav.querySelectorAll('[data-auth-nav]').forEach((item) => item.remove());
 
       if (currentUser?.role === 'admin') {
-        nav.insertAdjacentHTML('beforeend', '<a data-auth-nav href="admin.html">Admin</a>');
+        ensureNavLayout(nav).actions.insertAdjacentHTML('beforeend', '<a data-auth-nav href="admin.html">Admin</a>');
       }
 
       if (currentUser) {
-        nav.insertAdjacentHTML(
+        ensureNavLayout(nav).actions.insertAdjacentHTML(
           'beforeend',
-          `<a data-auth-nav href="auth.html">${currentUser.name || 'Mi cuenta'}</a><button data-auth-nav class="nav-logout-button" type="button">Salir</button>`
+          `<a data-auth-nav class="nav-icon-button" href="auth.html" aria-label="${currentUser.name || 'Mi cuenta'}"><img class="nav-icon nav-login-icon" src="assets/login-cropped.png" alt="" /></a><button data-auth-nav class="nav-logout-button" type="button">Salir</button>`
         );
         nav.querySelectorAll('.nav-logout-button').forEach((button) => {
           button.addEventListener('click', () => {
@@ -270,7 +377,7 @@
         return;
       }
 
-      nav.insertAdjacentHTML('beforeend', '<a data-auth-nav href="auth.html">Ingresar</a>');
+      ensureNavLayout(nav).actions.insertAdjacentHTML('beforeend', '<a data-auth-nav class="nav-icon-button" href="auth.html" aria-label="Ingresar"><img class="nav-icon nav-login-icon" src="assets/login-cropped.png" alt="" /></a>');
     });
   };
 

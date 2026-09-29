@@ -1,13 +1,26 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { catalogProducts } from '../lib/catalog';
 import { getCart, getSession, setSession } from './client-utils';
 
 export default function Header({ detail = false }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const [user, setUser] = useState(null);
   const [count, setCount] = useState(0);
+
+  const normalizedQuery = query.trim().toLowerCase();
+  const searchResults = normalizedQuery
+    ? catalogProducts.filter((product) => {
+        const haystack = [product.name, product.label, product.description, product.price, product.slug].join(' ').toLowerCase();
+        return haystack.includes(normalizedQuery);
+      })
+    : catalogProducts;
 
   useEffect(() => {
     const sync = () => {
@@ -23,9 +36,22 @@ export default function Header({ detail = false }) {
     };
   }, []);
 
+  const closeMenus = () => {
+    setOpen(false);
+    setSearchOpen(false);
+  };
+
   const logout = () => {
     setSession(null);
     window.location.href = '/';
+  };
+
+  const submitSearch = (event) => {
+    event.preventDefault();
+    if (searchResults.length > 0) {
+      router.push(searchResults[0].page || `/producto/${searchResults[0].slug}`);
+      closeMenus();
+    }
   };
 
   return (
@@ -39,19 +65,37 @@ export default function Header({ detail = false }) {
           <span></span><span></span><span></span><span className="sr-only">Abrir navegacion</span>
         </button>
         <nav className={`nav ${detail ? 'detail-nav' : ''} ${open ? 'is-open' : ''}`}>
-          <Link href="/productos">Productos</Link>
-          <Link href="/donde-encontrarnos">Contacto</Link>
-          <Link href="/carrito">Carrito{count > 0 ? ` (${count})` : ''}</Link>
+          <Link className="nav-primary-link" href="/productos" onClick={closeMenus}>Productos</Link>
+          <Link className="nav-primary-link" href="/donde-encontrarnos" onClick={closeMenus}>Contactanos</Link>
+          <div className={`nav-search ${searchOpen ? 'is-open' : ''}`}>
+            <button className="nav-icon-button" type="button" aria-label="Buscar productos" aria-expanded={searchOpen} onClick={() => setSearchOpen(!searchOpen)}>
+              <img className="nav-icon" src="/assets/search.png" alt="" />
+            </button>
+            <form className="nav-search-panel" hidden={!searchOpen} onSubmit={submitSearch}>
+              <label className="sr-only" htmlFor="site-search">Buscar productos</label>
+              <input id="site-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar productos" autoComplete="off" />
+              <div className="nav-search-results">
+                {searchResults.length > 0 ? searchResults.map((product) => (
+                  <Link key={product.slug} href={product.page || `/producto/${product.slug}`} onClick={closeMenus}>
+                    <span>{product.name}</span>
+                    <small>{product.price}</small>
+                  </Link>
+                )) : <p>No encontramos productos.</p>}
+              </div>
+            </form>
+          </div>
+          <Link className="nav-icon-button nav-cart-link" href="/carrito" aria-label={`Carrito${count > 0 ? `, ${count} productos` : ''}`} onClick={closeMenus}>
+            <img className="nav-icon" src="/assets/cart.png" alt="" />
+            {count > 0 ? <span className="nav-cart-count">{count}</span> : null}
+          </Link>
+          <Link className="nav-icon-button" href="/auth" aria-label={user ? (user.name || 'Mi cuenta') : 'Ingresar'} onClick={closeMenus}>
+            <img className="nav-icon nav-login-icon" src="/assets/login-cropped.png" alt="" />
+          </Link>
           {user?.role === 'admin' ? <Link href="/admin">Admin</Link> : null}
-          {user ? (
-            <>
-              <Link href="/auth">{user.name || 'Mi cuenta'}</Link>
-              <button className="nav-logout-button" type="button" onClick={logout}>Salir</button>
-            </>
-          ) : <Link href="/auth">Ingresar</Link>}
+          {user ? <button className="nav-logout-button" type="button" onClick={logout}>Salir</button> : null}
         </nav>
       </header>
-      <button className={`mobile-menu-backdrop ${open ? 'is-visible' : ''}`} type="button" aria-label="Cerrar navegacion" onClick={() => setOpen(false)}></button>
+      <button className={`mobile-menu-backdrop ${open ? 'is-visible' : ''}`} type="button" aria-label="Cerrar navegacion" onClick={closeMenus}></button>
     </>
   );
 }

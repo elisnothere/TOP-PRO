@@ -163,7 +163,7 @@ h3 {
 .topbar {
   position: sticky;
   top: 14px;
-  z-index: 30;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -231,6 +231,8 @@ h3 {
 
 .nav {
   align-items: center;
+  justify-content: space-between;
+  flex: 1;
   gap: 22px;
 }
 
@@ -238,6 +240,150 @@ h3 {
   font-size: 0.96rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+
+.nav-center,
+.nav-actions {
+  display: flex;
+  align-items: center;
+}
+
+.nav-center {
+  justify-content: center;
+  gap: 28px;
+  flex: 1;
+}
+
+.nav-actions {
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.nav > .nav-primary-link:first-child {
+  margin-left: auto;
+}
+
+.nav > .nav-search {
+  margin-left: auto;
+}
+
+.nav-icon-button {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 8px;
+  border: 1px solid rgba(30, 27, 45, 0.12);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.42);
+  cursor: pointer;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.nav-icon-button:hover,
+.nav-icon-button:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(30, 27, 45, 0.26);
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.nav-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.nav-login-icon {
+  width: 26px;
+  height: 26px;
+}
+
+.nav-cart-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: grid;
+  min-width: 20px;
+  height: 20px;
+  place-items: center;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--danger);
+  color: #fffdf8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.nav-search {
+  position: relative;
+  z-index: 1001;
+}
+
+.nav-search-panel {
+  position: absolute;
+  z-index: 1002;
+  top: calc(100% + 12px);
+  right: 0;
+  display: grid;
+  gap: 12px;
+  width: min(320px, 84vw);
+  padding: 14px;
+  border: 1px solid rgba(30, 27, 45, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 252, 247, 0.98);
+  box-shadow: 0 18px 46px rgba(29, 16, 30, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.nav-search-panel[hidden] {
+  display: none;
+}
+
+.nav-search.is-open .nav-search-panel {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.nav-search-panel input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.72);
+  outline: none;
+}
+
+.nav-search-panel input:focus {
+  border-color: rgba(224, 6, 6, 0.42);
+}
+
+.nav-search-results {
+  display: grid;
+  gap: 8px;
+}
+
+.nav-search-results a {
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.nav-search-results small,
+.nav-search-results p {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
 }
 
 .nav-toggle {
@@ -291,6 +437,10 @@ main {
 .feature-showcase > *:not(.feature-showcase-backdrop) {
   position: relative;
   z-index: 1;
+}
+
+.feature-showcase > .topbar {
+  z-index: 1000;
 }
 
 .feature-showcase-backdrop {
@@ -3522,6 +3672,45 @@ body.menu-open {
     background: rgba(255, 255, 255, 0.5);
     font-size: 0.92rem;
     letter-spacing: 0.14em;
+  }
+
+  .nav-center,
+  .nav-actions {
+    width: 100%;
+  }
+
+  .nav-center {
+    display: grid;
+    gap: 10px;
+  }
+
+  .nav-actions {
+    justify-content: flex-end;
+  }
+
+  .nav > .nav-primary-link:first-child,
+  .nav > .nav-search {
+    margin-left: 0;
+  }
+
+  .nav .nav-icon-button,
+  .detail-nav .nav-icon-button {
+    width: 46px;
+    height: 46px;
+    padding: 9px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.58);
+  }
+
+  .nav-search-panel {
+    right: 0;
+    width: min(72vw, 300px);
+  }
+
+  .nav-search-results a {
+    width: 100%;
+    padding: 10px 12px;
+    letter-spacing: 0;
   }
 
   .mobile-menu-backdrop {

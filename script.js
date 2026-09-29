@@ -3,7 +3,7 @@ const html = htm.bind(React.createElement);
 
 const navigation = [
   { label: 'Productos', href: 'productos.html' },
-  { label: 'Contacto', href: '#contact' }
+  { label: 'Contactanos', href: '#contact' }
 ];
 
 const notebookAsset = './assets/notebook.png';

@@ -223,18 +223,31 @@
   function updateCartNavigation() {
     const count = getCount();
     document.querySelectorAll('.nav, .detail-nav').forEach((nav) => {
-      const label = count > 0 ? `Carrito (${count})` : 'Carrito';
+      const label = count > 0 ? `Carrito, ${count} productos` : 'Carrito';
+      const actions = nav.querySelector('.nav-actions') || nav;
       let cartLink = nav.querySelector('[data-cart-nav]');
 
       if (!cartLink) {
         cartLink = document.createElement('a');
         cartLink.setAttribute('data-cart-nav', 'true');
+        cartLink.className = 'nav-icon-button nav-cart-link';
         cartLink.href = 'carrito.html';
-        nav.appendChild(cartLink);
+        cartLink.innerHTML = '<img class="nav-icon" src="assets/cart.png" alt="" />';
+        actions.appendChild(cartLink);
+      } else if (cartLink.parentElement !== actions) {
+        actions.appendChild(cartLink);
       }
 
-      if (cartLink.textContent !== label) {
-        cartLink.textContent = label;
+      let badge = cartLink.querySelector('.nav-cart-count');
+      if (count > 0 && !badge) {
+        badge = document.createElement('span');
+        badge.className = 'nav-cart-count';
+        cartLink.appendChild(badge);
+      }
+
+      if (badge) {
+        badge.textContent = String(count);
+        badge.hidden = count <= 0;
       }
 
       const ariaLabel = `${label} de compras`;
