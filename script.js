@@ -616,6 +616,14 @@ function App() {
               </span>
             </a>
 
+            <nav className=${`nav${navOpen ? ' is-open' : ''}`} id="site-nav">
+              ${navigation.map(
+                (item) => html`<a href=${item.href} onClick=${() => setNavOpen(false)}>${item.label}</a>`
+              )}
+            </nav>
+
+            <div className="header-actions"></div>
+
             <button
               className="nav-toggle"
               type="button"
@@ -626,14 +634,8 @@ function App() {
               <span></span>
               <span></span>
               <span></span>
-              <span className="sr-only">Toggle navigation</span>
+              <span className="sr-only">Abrir navegacion</span>
             </button>
-
-            <nav className=${`nav${navOpen ? ' is-open' : ''}`} id="site-nav">
-              ${navigation.map(
-                (item) => html`<a href=${item.href} onClick=${() => setNavOpen(false)}>${item.label}</a>`
-              )}
-            </nav>
           </header>
 
           <button

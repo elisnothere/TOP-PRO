@@ -12,8 +12,9 @@
   const normalizeNavHref = (href = '') => href.replace(/^\.?\//, '');
 
   const ensureNavLayout = (nav) => {
+    const topbar = nav.closest('.topbar, .detail-topbar');
     let center = nav.querySelector('.nav-center');
-    let actions = nav.querySelector('.nav-actions');
+    let actions = topbar?.querySelector(':scope > .header-actions') || nav.querySelector('.nav-actions');
 
     if (!center) {
       center = document.createElement('div');
@@ -23,8 +24,31 @@
 
     if (!actions) {
       actions = document.createElement('div');
-      actions.className = 'nav-actions';
-      nav.appendChild(actions);
+      actions.className = 'header-actions';
+      if (topbar) {
+        const toggle = topbar.querySelector(':scope > .nav-toggle');
+        topbar.insertBefore(actions, toggle || null);
+      } else {
+        actions.className = 'nav-actions';
+        nav.appendChild(actions);
+      }
+    } else if (topbar && actions.parentElement !== topbar) {
+      actions.className = 'header-actions';
+      const toggle = topbar.querySelector(':scope > .nav-toggle');
+      topbar.insertBefore(actions, toggle || null);
+    }
+
+    if (topbar) {
+      const brand = topbar.querySelector(':scope > .brand');
+      const toggle = topbar.querySelector(':scope > .nav-toggle');
+      if (brand && nav.previousElementSibling !== brand) {
+        topbar.insertBefore(nav, brand.nextElementSibling);
+      }
+      if (toggle && actions.nextElementSibling !== toggle) {
+        topbar.insertBefore(actions, toggle);
+      } else if (!toggle && actions.previousElementSibling !== nav) {
+        topbar.insertBefore(actions, nav.nextElementSibling);
+      }
     }
 
     [...nav.children].forEach((child) => {
@@ -58,12 +82,13 @@
     const wrapper = document.createElement('div');
     wrapper.className = 'nav-search';
     wrapper.setAttribute('data-search-nav', 'true');
+    const searchId = `site-search-${document.querySelectorAll('[data-search-nav]').length + 1}`;
     wrapper.innerHTML = `
       <button class="nav-icon-button" type="button" aria-label="Buscar productos" aria-expanded="false">
         <img class="nav-icon" src="assets/search.png" alt="" />
       </button>
       <form class="nav-search-panel">
-        <label class="sr-only" for="site-search-${Math.random().toString(36).slice(2)}">Buscar productos</label>
+        <label class="sr-only" for="${searchId}">Buscar productos</label>
         <input placeholder="Buscar productos" autocomplete="off" />
         <div class="nav-search-results"></div>
       </form>
@@ -75,6 +100,12 @@
     const results = wrapper.querySelector('.nav-search-results');
     const label = wrapper.querySelector('label');
     input.id = label.getAttribute('for');
+
+    const closeSearch = () => {
+      wrapper.classList.remove('is-open');
+      form.hidden = true;
+      button.setAttribute('aria-expanded', 'false');
+    };
 
     const renderResults = () => {
       const query = input.value.trim().toLowerCase();
@@ -99,12 +130,28 @@
       }
     });
 
+    document.addEventListener('pointerdown', (event) => {
+      if (!wrapper.contains(event.target)) {
+        closeSearch();
+      }
+    });
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeSearch();
+      }
+    });
     input.addEventListener('input', renderResults);
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const firstResult = results.querySelector('a');
       if (firstResult) {
+        closeSearch();
         window.location.href = firstResult.href;
+      }
+    });
+    results.addEventListener('click', (event) => {
+      if (event.target.closest('a')) {
+        closeSearch();
       }
     });
 
@@ -236,6 +283,17 @@
     }
 
     const setOpen = (open) => {
+      topbar.querySelectorAll('.nav-search').forEach((search) => {
+        const form = search.querySelector('.nav-search-panel');
+        const button = search.querySelector('.nav-icon-button');
+        search.classList.remove('is-open');
+        if (form) {
+          form.hidden = true;
+        }
+        if (button) {
+          button.setAttribute('aria-expanded', 'false');
+        }
+      });
       topbar.classList.toggle('is-open', open);
       nav.classList.toggle('is-open', open);
       backdrop.classList.toggle('is-visible', open);
@@ -348,23 +406,25 @@
 
     navs.forEach((nav) => {
       ensureSearchNavigation(nav);
+      const layout = ensureNavLayout(nav);
+      const actions = layout.actions;
       const authState = currentUser
         ? `${currentUser.role}:${currentUser.email}:${currentUser.name}`
         : 'guest';
 
-      if (nav.dataset.authState === authState && nav.querySelector('[data-auth-nav]')) {
+      if (nav.dataset.authState === authState && actions.querySelector('[data-auth-nav]')) {
         return;
       }
 
       nav.dataset.authState = authState;
-      nav.querySelectorAll('[data-auth-nav]').forEach((item) => item.remove());
+      actions.querySelectorAll('[data-auth-nav]').forEach((item) => item.remove());
 
       if (currentUser?.role === 'admin') {
-        ensureNavLayout(nav).actions.insertAdjacentHTML('beforeend', '<a data-auth-nav href="admin.html">Admin</a>');
+        actions.insertAdjacentHTML('beforeend', '<a data-auth-nav href="admin.html">Admin</a>');
       }
 
       if (currentUser) {
-        ensureNavLayout(nav).actions.insertAdjacentHTML(
+        actions.insertAdjacentHTML(
           'beforeend',
           `<a data-auth-nav class="nav-icon-button" href="auth.html" aria-label="${currentUser.name || 'Mi cuenta'}"><img class="nav-icon nav-login-icon" src="assets/login-cropped.png" alt="" /></a><button data-auth-nav class="nav-logout-button" type="button">Salir</button>`
         );
@@ -377,7 +437,7 @@
         return;
       }
 
-      ensureNavLayout(nav).actions.insertAdjacentHTML('beforeend', '<a data-auth-nav class="nav-icon-button" href="auth.html" aria-label="Ingresar"><img class="nav-icon nav-login-icon" src="assets/login-cropped.png" alt="" /></a>');
+      actions.insertAdjacentHTML('beforeend', '<a data-auth-nav class="nav-icon-button" href="auth.html" aria-label="Ingresar"><img class="nav-icon nav-login-icon" src="assets/login-cropped.png" alt="" /></a>');
     });
   };
 

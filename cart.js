@@ -224,8 +224,19 @@
     const count = getCount();
     document.querySelectorAll('.nav, .detail-nav').forEach((nav) => {
       const label = count > 0 ? `Carrito, ${count} productos` : 'Carrito';
-      const actions = nav.querySelector('.nav-actions') || nav;
-      let cartLink = nav.querySelector('[data-cart-nav]');
+      const topbar = nav.closest('.topbar, .detail-topbar');
+      let actions = topbar?.querySelector(':scope > .header-actions') || nav.querySelector('.nav-actions');
+      if (!actions) {
+        actions = document.createElement('div');
+        actions.className = topbar ? 'header-actions' : 'nav-actions';
+        if (topbar) {
+          const toggle = topbar.querySelector(':scope > .nav-toggle');
+          topbar.insertBefore(actions, toggle || null);
+        } else {
+          nav.appendChild(actions);
+        }
+      }
+      let cartLink = actions.querySelector('[data-cart-nav]') || nav.querySelector('[data-cart-nav]');
 
       if (!cartLink) {
         cartLink = document.createElement('a');
