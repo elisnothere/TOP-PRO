@@ -453,7 +453,18 @@
 
   ensureAdminAccount();
 
-  const scheduleNavigationEnhancement = () => window.requestAnimationFrame(enhanceNavigation);
+  let navigationRefreshScheduled = false;
+  const scheduleNavigationEnhancement = () => {
+    if (navigationRefreshScheduled) {
+      return;
+    }
+
+    navigationRefreshScheduled = true;
+    window.requestAnimationFrame(() => {
+      navigationRefreshScheduled = false;
+      enhanceNavigation();
+    });
+  };
   const scheduleFullNavigationRefresh = () => {
     scheduleNavigationEnhancement();
     window.requestAnimationFrame(() => window.TopProCart?.refreshNavigation?.());

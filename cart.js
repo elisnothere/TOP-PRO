@@ -262,8 +262,13 @@
       }
 
       if (badge) {
-        badge.textContent = String(count);
-        badge.hidden = count <= 0;
+        const nextBadgeText = String(count);
+        if (badge.textContent !== nextBadgeText) {
+          badge.textContent = nextBadgeText;
+        }
+        if (badge.hidden !== (count <= 0)) {
+          badge.hidden = count <= 0;
+        }
       }
 
       const ariaLabel = `${label} de compras`;
@@ -290,7 +295,18 @@
     refreshNavigation: updateCartNavigation
   };
 
-  const scheduleNavigationUpdate = () => window.requestAnimationFrame(updateCartNavigation);
+  let navigationUpdateScheduled = false;
+  const scheduleNavigationUpdate = () => {
+    if (navigationUpdateScheduled) {
+      return;
+    }
+
+    navigationUpdateScheduled = true;
+    window.requestAnimationFrame(() => {
+      navigationUpdateScheduled = false;
+      updateCartNavigation();
+    });
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', scheduleNavigationUpdate);
